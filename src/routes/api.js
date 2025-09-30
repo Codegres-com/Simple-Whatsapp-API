@@ -5,6 +5,7 @@ const router = express.Router();
 const { getQrCodeString, getQrCodeImage } = require('../controllers/authController');
 const { sendTextMessage, sendAttachmentMessage, sendFromApi } = require('../controllers/messageController');
 const { uploadFile } = require('../controllers/uploadController');
+const upload = require('../middleware/uploadMiddleware');
 
 // Public routes for connection and QR code
 router.get('/connect', getQrCodeString);
@@ -12,10 +13,10 @@ router.get('/connect/image', getQrCodeImage);
 
 // Protected routes for sending messages
 router.post('/send-message', sendTextMessage);
-router.post('/send-attachment', sendAttachmentMessage);
+router.post('/send-attachment', upload.single('file'), sendAttachmentMessage);
 
 // Route for file uploads
-router.post('/upload', uploadFile);
+router.post('/upload', upload.single('file'), uploadFile);
 
 // GET route for sending messages
 router.get('/send', sendFromApi);

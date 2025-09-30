@@ -32,8 +32,11 @@ const sendTextMessage = async (req, res) => {
     }
 };
 
+const fs = require('fs');
+
 /**
  * Handles the /send-attachment endpoint.
+ * Can handle direct file uploads (multipart/form-data) or URL/Base64 from JSON body.
  */
 const sendAttachmentMessage = async (req, res) => {
     const sessionId = getSessionId(req);
@@ -41,17 +44,33 @@ const sendAttachmentMessage = async (req, res) => {
         return res.status(400).json({ error: 'X-API-KEY header is required.' });
     }
 
-    const { to, file, caption, type } = req.body;
-
-    if (!to || !file || !type) {
-        return res.status(400).json({ error: 'Missing required parameters: to, file, type' });
+    const { to, caption } = req.body;
+    if (!to) {
+        return res.status(400).json({ error: 'Missing required parameter: to' });
     }
 
     try {
-        await sendAttachment(sessionId, to, file, caption, type);
-        res.status(200).json({ success: true, message: 'Attachment sent successfully.' });
+        if (req.file) {
+            // A file was uploaded directly with the request
+            await sendAttachment(sessionId, to, req.file.path, caption);
+            // Clean up the temporary file after sending
+            fs.unlinkSync(req.file.path);
+            res.status(200).json({ success: true, message: 'Attachment sent successfully from uploaded file.' });
+        } else {
+            // No file uploaded, expect `file` and `type` in the body for URL/Base64
+            const { file, type } = req.body;
+            if (!file) {
+                return res.status(400).json({ error: 'Missing "file" in request body or as an uploaded file.' });
+            }
+            await sendAttachment(sessionId, to, file, caption, type);
+            res.status(200).json({ success: true, message: 'Attachment sent successfully from URL/Base64.' });
+        }
     } catch (error) {
         console.error(`[${sessionId}] Failed to send attachment:`, error);
+        // If a file was uploaded, ensure it's cleaned up on error
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
         res.status(500).json({ success: false, error: error.message });
     }
 };

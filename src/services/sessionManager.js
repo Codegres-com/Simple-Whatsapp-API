@@ -125,16 +125,32 @@ const sendMessage = async (sessionId, to, message) => {
  * Sends an attachment from a specific session.
  * @param {string} sessionId - The session ID.
  * @param {string} to - The recipient's phone number.
- * @param {string} fileUrl - URL to the file.
+ * @param {string} file - URL to the file, local file path, or Base64 string.
  * @param {string} caption - The caption for the attachment.
+ * @param {string} [type] - The MIME type, required for Base64 encoded files.
  */
-const sendAttachment = async (sessionId, to, fileUrl, caption) => {
+const sendAttachment = async (sessionId, to, file, caption, type) => {
     const session = sessions.get(sessionId);
     if (!session || session.status !== 'Connected') {
         throw new Error(`Session ${sessionId} is not connected.`);
     }
 
-    const media = await MessageMedia.fromUrl(fileUrl, { unsafeMime: true });
+    let media;
+    if (fs.existsSync(file)) {
+        // Send from a local file path
+        media = MessageMedia.fromFilePath(file);
+    } else if (file.startsWith('http')) {
+        // Send from a URL
+        media = await MessageMedia.fromUrl(file, { unsafeMime: true });
+    } else {
+        // Send from a Base64 string
+        if (!type) {
+            throw new Error('The "type" parameter is required for Base64 attachments.');
+        }
+        const base64Data = file.includes(',') ? file.split(',')[1] : file;
+        media = new MessageMedia(type, base64Data, 'file');
+    }
+
     const chatId = `${to.replace('+', '')}@c.us`;
     await session.client.sendMessage(chatId, media, { caption });
     console.log(`Attachment sent to ${to} from session ${sessionId}`);

@@ -8,8 +8,8 @@ A multi-session, easy-to-deploy API that allows you to send text messages and at
 - **Easy Login**: Scan a QR code just once per session to connect your WhatsApp account.
 - **Persistent Sessions**: Sessions are saved locally, so the server can be restarted without needing to log in again.
 - **Send Text Messages**: A simple endpoint to send plain text messages from a specific session.
-- **Send Attachments**: Send images, videos, or documents using either a URL or a Base64 encoded string.
-- **File Uploads**: A dedicated endpoint to upload files and receive a temporary URL, perfect for sending as attachments.
+- **Send Attachments**: Send images, videos, or documents directly via file upload, URL, or a Base64 encoded string.
+- **File Uploads**: A dedicated endpoint to upload files and receive a temporary URL, perfect for sending as attachments later.
 - **Secure**:
     - Protect your entire server with a global **Master API Key**.
     - Manage individual WhatsApp sessions with a per-session **API Key**.
@@ -114,10 +114,10 @@ Once connected, the server will save the session data in the `./sessions` folder
     -   `X-API-KEY: your_unique_session_key`
 -   **Response**: `200 OK` with `Content-Type: image/png`.
 
-#### 3. **Upload an Attachment**
+#### 3. **Upload an Attachment (for later use)**
 
 -   **Endpoint**: `POST /upload`
--   **Description**: Upload a file to get a temporary URL. The URL is valid for 5 minutes and can be used in the `/send` or `/send-attachment` endpoints.
+-   **Description**: Upload a file to get a temporary URL. The URL is valid for 5 minutes and can be used in the `/send` or `/send-attachment` (URL method) endpoints.
 -   **Headers**: `X-MASTER-KEY: your_global_master_key_here`
 -   **Body**: `multipart/form-data` with a single field named `file`.
 -   **Response**:
@@ -158,7 +158,7 @@ Once connected, the server will save the session data in the `./sessions` folder
 -   **Headers**:
     -   `X-MASTER-KEY: your_global_master_key_here`
     -   `X-API-KEY: your_unique_session_key`
--   **Payload**:
+-   **Payload**: `application/json`
     ```json
     {
       "to": "+1234567890",
@@ -169,19 +169,55 @@ Once connected, the server will save the session data in the `./sessions` folder
 #### 6. **Send Attachment (POST)**
 
 -   **Endpoint**: `POST /send-attachment`
+-   **Description**: Sends an attachment to a specified number. This endpoint supports three methods: direct file upload, from a URL, or from a Base64 string.
 -   **Headers**:
     -   `X-MASTER-KEY: your_global_master_key_here`
     -   `X-API-KEY: your_unique_session_key`
+
+---
+
+##### **Method 1: Direct File Upload**
+
+-   **Content-Type**: `multipart/form-data`
+-   **Body Fields**:
+    -   `to`: The recipient's phone number.
+    -   `file`: The file to be sent.
+    -   `caption` (optional): A caption for the file.
+-   **Example `curl` Request**:
+    ```bash
+    curl -X POST http://localhost:3000/api/send-attachment \
+    -H "X-MASTER-KEY: your_global_master_key_here" \
+    -H "X-API-KEY: your_unique_session_key" \
+    -F "to=+1234567890" \
+    -F "file=@/path/to/your/document.pdf" \
+    -F "caption=Here is the document you requested."
+    ```
+
+---
+
+##### **Method 2: From URL or Base64**
+
+-   **Content-Type**: `application/json`
 -   **Payload**:
     ```json
     {
       "to": "+1234567890",
-      "file": "base64_encoded_file_or_url",
-      "type": "image/png | video/mp4 | etc.",
-      "caption": "Optional: Check out this file!"
+      "file": "url_or_base64_string",
+      "type": "image/png", // Required only for Base64
+      "caption": "Optional caption"
     }
     ```
--   **Note**: If `file` is a Base64 string, you **must** provide the correct `type` (MIME type).
+-   **Notes**:
+    -   If `file` is a URL, the server will download it.
+    -   If `file` is a Base64 string, you **must** provide the correct `type` (MIME type).
+-   **Example `curl` Request (URL)**:
+    ```bash
+    curl -X POST http://localhost:3000/api/send-attachment \
+    -H "Content-Type: application/json" \
+    -H "X-MASTER-KEY: your_global_master_key_here" \
+    -H "X-API-KEY: your_unique_session_key" \
+    -d '{"to": "+1234567890", "file": "https://i.imgur.com/some-image.jpeg", "caption": "From a URL"}'
+    ```
 
 ---
 
