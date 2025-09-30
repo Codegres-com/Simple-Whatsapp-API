@@ -1,0 +1,9 @@
+# Ignore dependencies, git, and sensitive files
+node_modules
+npm-debug.log
+.git
+.gitignore
+
+# Ignore session and upload data
+sessions/
+uploads/

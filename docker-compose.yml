@@ -1,0 +1,17 @@
+services:
+  whatsapp-api:
+    build: .
+    container_name: whatsapp_api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - MASTER_API_KEY=${MASTER_API_KEY:-yoursecretkey}
+      - PORT=${PORT:-3000}
+    volumes:
+      - whatsapp_sessions:/usr/src/app/sessions
+      - whatsapp_uploads:/usr/src/app/uploads
+
+volumes:
+  whatsapp_sessions:
+  whatsapp_uploads:

@@ -51,6 +51,71 @@ npm start
 
 ---
 
+## 🐳 Running with Docker
+
+You can also run this application using Docker and Docker Compose for a more isolated and reproducible setup.
+
+### **1. Using Docker Compose (Recommended)**
+
+This is the easiest way to get started.
+
+1.  **Create an Environment File**:
+    Create a `.env` file in the root of the project. This file will be used by Docker Compose to set the environment variables inside the container.
+
+    ```
+    # .env
+
+    # The master key to protect the server
+    MASTER_API_KEY=yoursecretkey
+
+    # The port to run the server on (optional, defaults to 3000)
+    PORT=3000
+    ```
+
+2.  **Build and Run the Container**:
+    Run the following command to build the Docker image and start the container in the background:
+
+    ```bash
+    docker compose up --build -d
+    ```
+
+    The server will now be running on the port you specified (or the default, 3000).
+
+3.  **To Stop the Server**:
+    ```bash
+    docker compose down
+    ```
+
+### **2. Using Docker (Manual)**
+
+If you prefer not to use Docker Compose, you can build and run the container manually.
+
+1.  **Build the Docker Image**:
+    ```bash
+    docker build -t whatsapp-api .
+    ```
+
+2.  **Run the Docker Container**:
+    You must pass the `MASTER_API_KEY` and map the port. You also need to create and mount volumes to persist the `sessions` and `uploads` data.
+
+    ```bash
+    docker run -d \
+      -p 3000:3000 \
+      -e MASTER_API_KEY="yoursecretkey" \
+      -e PORT="3000" \
+      --name whatsapp-api-container \
+      -v whatsapp_sessions:/usr/src/app/sessions \
+      -v whatsapp_uploads:/usr/src/app/uploads \
+      whatsapp-api
+    ```
+    - `-d`: Run in detached mode.
+    - `-p`: Map port 3000 on your host to port 3000 in the container.
+    - `-e`: Set environment variables.
+    - `--name`: Assign a name to the container.
+    - `-v`: Mount named volumes to persist data.
+
+---
+
 ## 📖 API Documentation
 
 All endpoints are prefixed with `/api`.
