@@ -86,7 +86,30 @@ This is the easiest way to get started.
     docker compose down
     ```
 
-### **2. Using Docker (Manual)**
+### **2. Using the Pre-built Docker Hub Image**
+
+If you don't want to build the image from the source, you can use the pre-built image from Docker Hub.
+
+1.  **Pull the Image**:
+    ```bash
+    docker pull codegres/simple-whatsapp-api:latest
+    ```
+
+2.  **Run the Image**:
+    You still need to provide the environment variables and mount the volumes.
+
+    ```bash
+    docker run -d \
+      -p 3000:3000 \
+      -e MASTER_API_KEY="yoursecretkey" \
+      -e PORT="3000" \
+      --name whatsapp-api-container \
+      -v whatsapp_sessions:/usr/src/app/sessions \
+      -v whatsapp_uploads:/usr/src/app/uploads \
+      codegres/simple-whatsapp-api:latest
+    ```
+
+### **3. Using Docker (Manual Build)**
 
 If you prefer not to use Docker Compose, you can build and run the container manually.
 
