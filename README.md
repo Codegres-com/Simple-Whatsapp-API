@@ -1,15 +1,19 @@
 # Simple WhatsApp API
 
-A single-purpose, easy-to-deploy API that allows you to send text messages and attachments from a normal WhatsApp account with minimal setup.
+A multi-session, easy-to-deploy API that allows you to send text messages and attachments from multiple WhatsApp accounts with minimal setup.
 
 ## Features
 
-- **Easy Login**: Scan a QR code just once to connect your WhatsApp account.
-- **Persistent Session**: The session is saved locally, so the server can be restarted without needing to log in again.
-- **Send Text Messages**: A simple endpoint to send plain text messages.
+- **Multi-Session Support**: Connect and manage multiple WhatsApp accounts simultaneously. Each session is tied to its own unique API key.
+- **Easy Login**: Scan a QR code just once per session to connect your WhatsApp account.
+- **Persistent Sessions**: Sessions are saved locally, so the server can be restarted without needing to log in again.
+- **Send Text Messages**: A simple endpoint to send plain text messages from a specific session.
 - **Send Attachments**: Send images, videos, or documents using either a URL or a Base64 encoded string.
-- **Secure**: Protect your sending endpoints with a configurable API key.
-- **Dynamic QR Codes**: Fetch the login QR code as a string or a PNG image via API endpoints.
+- **File Uploads**: A dedicated endpoint to upload files and receive a temporary URL, perfect for sending as attachments.
+- **Secure**:
+    - Protect your entire server with a global **Master API Key**.
+    - Manage individual WhatsApp sessions with a per-session **API Key**.
+- **Dynamic QR Codes**: Fetch the login QR code for any session as a string or a PNG image via API endpoints.
 
 ---
 
@@ -18,7 +22,7 @@ A single-purpose, easy-to-deploy API that allows you to send text messages and a
 ### **Prerequisites**
 
 - [Node.js](https://nodejs.org/) (v16 or higher recommended)
-- A WhatsApp account
+- One or more WhatsApp accounts
 
 ### **1. Clone and Install Dependencies**
 
@@ -30,38 +34,20 @@ npm install
 
 ### **2. Configure Your Environment**
 
-Create a `.env` file in the root of the project and add your secret API key.
+Create a `.env` file in the root of the project and add your Master API Key. You can invent any secret strings for the keys.
 
 ```
 # .env
-API_KEY=your_secret_api_key_here
-```
 
-Replace `your_secret_api_key_here` with a strong, private key of your choice.
+# This key protects the entire server. All API requests must include it.
+MASTER_API_KEY=your_global_master_key_here
+```
 
 ### **3. Start the Server**
 
 ```bash
 npm start
 ```
-
-This command will be configured in `package.json` to run `node src/index.js`.
-
----
-
-## 📲 Connecting Your Account
-
-On the first run, you need to link your WhatsApp account by scanning a QR code.
-
-1.  When the server starts, it will generate a QR code.
-2.  You can get this QR code from one of the following endpoints:
-
-    -   **GET `/api/connect`**: Returns the QR code as a string.
-    -   **GET `/api/connect/image`**: Returns the QR code as a PNG image.
-
-3.  Open WhatsApp on your phone, go to **Settings > Linked Devices**, and scan the QR code.
-
-Once connected, the server will save a `session.json` file, and you won't need to scan the code again unless you log out.
 
 ---
 
@@ -71,20 +57,50 @@ All endpoints are prefixed with `/api`.
 
 ### **Authentication**
 
-The following endpoints require an API key to be sent in the `X-API-KEY` header:
-- `POST /send-message`
-- `POST /send-attachment`
+This API uses a two-key system for security and session management:
 
-### **Endpoints**
+1.  **Master Key (`X-MASTER-KEY`)**:
+    -   This is a global key that grants access to the API server.
+    -   It must be included in the header of **every single request**.
+    -   This is the key you set in your `.env` file.
+
+2.  **Session Key (`X-API-KEY`)**:
+    -   This key identifies a specific WhatsApp session (i.e., a specific phone number).
+    -   You can invent any unique string for each session (e.g., `user1_phone`, `work_account`, a random hash, etc.).
+    -   The first time a new `X-API-KEY` is used with the `/connect` endpoint, a new session will be created for it.
+
+---
+
+## 📲 Connecting a Session
+
+To use a WhatsApp account, you must first connect it to a session key.
+
+1.  Choose a unique `X-API-KEY` for the account you want to connect (e.g., `my-personal-whatsapp`).
+2.  Make a request to one of the connection endpoints with both the master key and your chosen session key. The server will generate a QR code for that specific session.
+
+    -   **GET `/api/connect`**: Returns the QR code as a string.
+    -   **GET `/api/connect/image`**: Returns the QR code as a PNG image.
+
+3.  Open WhatsApp on your phone, go to **Settings > Linked Devices**, and scan the QR code.
+
+Once connected, the server will save the session data in the `./sessions` folder. You won't need to scan the code again for this session unless you log out. Repeat this process for each WhatsApp account you want to use, assigning a different `X-API-KEY` to each.
+
+---
+
+## **Endpoints**
 
 #### 1. **Get Connection Status / QR Code**
 
 -   **Endpoint**: `GET /connect`
--   **Description**: Get the current connection status. If a QR code is available for scanning, it will be returned as a string.
+-   **Description**: Get the current connection status for a session. If a QR code is available, it will be returned as a string. If not, the session status is returned.
+-   **Headers**:
+    -   `X-MASTER-KEY: your_global_master_key_here`
+    -   `X-API-KEY: your_unique_session_key`
 -   **Response (When QR is ready)**: `200 OK` with the QR string in the body.
 -   **Response (When connected)**: `200 OK`
     ```json
     {
+      "sessionId": "your_unique_session_key",
       "status": "Connected"
     }
     ```
@@ -92,13 +108,56 @@ The following endpoints require an API key to be sent in the `X-API-KEY` header:
 #### 2. **Get QR Code as Image**
 
 -   **Endpoint**: `GET /connect/image`
--   **Description**: Get the QR code as a PNG image, which you can display directly in a web browser or save as a file.
+-   **Description**: Get the session's QR code as a PNG image.
+-   **Headers**:
+    -   `X-MASTER-KEY: your_global_master_key_here`
+    -   `X-API-KEY: your_unique_session_key`
 -   **Response**: `200 OK` with `Content-Type: image/png`.
 
-#### 3. **Send Text Message**
+#### 3. **Upload an Attachment**
+
+-   **Endpoint**: `POST /upload`
+-   **Description**: Upload a file to get a temporary URL. The URL is valid for 5 minutes and can be used in the `/send` or `/send-attachment` endpoints.
+-   **Headers**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Body**: `multipart/form-data` with a single field named `file`.
+-   **Response**:
+    ```json
+    {
+        "message": "File uploaded successfully.",
+        "url": "http://localhost:3000/uploads/1678886400000-123456789.jpg"
+    }
+    ```
+-   **Example `curl` Request**:
+    ```bash
+    curl -X POST http://localhost:3000/api/upload \
+    -H "X-MASTER-KEY: your_global_master_key_here" \
+    -F "file=@/path/to/your/image.jpg"
+    ```
+
+#### 4. **Send Message (Simple GET)**
+
+-   **Endpoint**: `GET /send`
+-   **Description**: A simple GET request to send a text message or an attachment via URL.
+-   **Headers**:
+    -   `X-MASTER-KEY: your_global_master_key_here`
+    -   `X-API-KEY: your_unique_session_key`
+-   **Query Parameters**:
+    -   `number`: The recipient's phone number (e.g., `+1234567890`).
+    -   `message`: The text message to send.
+    -   `attachmentUrl` (optional): A URL to a file to send as an attachment. The `message` will be used as the caption.
+-   **Example `curl` Request**:
+    ```bash
+    curl "http://localhost:3000/api/send?number=+1234567890&message=Hello&attachmentUrl=http://localhost:3000/uploads/file.jpg" \
+    -H "X-MASTER-KEY: your_global_master_key_here" \
+    -H "X-API-KEY: your_unique_session_key"
+    ```
+
+#### 5. **Send Text Message (POST)**
 
 -   **Endpoint**: `POST /send-message`
--   **Headers**: `X-API-KEY: your_secret_api_key_here`
+-   **Headers**:
+    -   `X-MASTER-KEY: your_global_master_key_here`
+    -   `X-API-KEY: your_unique_session_key`
 -   **Payload**:
     ```json
     {
@@ -106,18 +165,13 @@ The following endpoints require an API key to be sent in the `X-API-KEY` header:
       "message": "Hello from the API!"
     }
     ```
--   **Example `curl` Request**:
-    ```bash
-    curl -X POST http://localhost:3000/api/send-message \
-    -H "Content-Type: application/json" \
-    -H "X-API-KEY: your_secret_api_key_here" \
-    -d '{"to": "+1234567890", "message": "Hello World"}'
-    ```
 
-#### 4. **Send Attachment**
+#### 6. **Send Attachment (POST)**
 
 -   **Endpoint**: `POST /send-attachment`
--   **Headers**: `X-API-KEY: your_secret_api_key_here`
+-   **Headers**:
+    -   `X-MASTER-KEY: your_global_master_key_here`
+    -   `X-API-KEY: your_unique_session_key`
 -   **Payload**:
     ```json
     {
@@ -127,23 +181,7 @@ The following endpoints require an API key to be sent in the `X-API-KEY` header:
       "caption": "Optional: Check out this file!"
     }
     ```
--   **Notes**:
-    -   If `file` is a URL, the server will download it.
-    -   If `file` is a Base64 string, you **must** provide the correct `type` (MIME type).
--   **Example `curl` Request (URL)**:
-    ```bash
-    curl -X POST http://localhost:3000/api/send-attachment \
-    -H "Content-Type: application/json" \
-    -H "X-API-KEY: your_secret_api_key_here" \
-    -d '{"to": "+1234567890", "file": "https://i.imgur.com/some-image.jpeg", "caption": "From a URL"}'
-    ```
--   **Example `curl` Request (Base64)**:
-    ```bash
-    curl -X POST http://localhost:3000/api/send-attachment \
-    -H "Content-Type: application/json" \
-    -H "X-API-KEY: your_secret_api_key_here" \
-    -d '{"to": "+1234567890", "file": "data:image/png;base64,iVBORw0KGgo...", "type": "image/png", "caption": "From Base64"}'
-    ```
+-   **Note**: If `file` is a Base64 string, you **must** provide the correct `type` (MIME type).
 
 ---
 
