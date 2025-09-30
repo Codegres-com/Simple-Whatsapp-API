@@ -2,84 +2,69 @@
 Simple Whatsapp API - Just connect with QR and start sending messages instantly.
 
 
-# 📌 Product Plan: Minimal WhatsApp Send API
+# 📌 Feature List: Client-Side WhatsApp API (Single Account per User)
 
-## 1. **Vision**
+## 1. **Authentication & Session**
 
-Provide a **single-purpose API** that allows sending text messages and attachments (images, videos, documents) from a normal WhatsApp account with minimal setup.
-
----
-
-## 2. **Core Features**
-
-* **Send Text Message**
-
-  * Endpoint: `POST /send-message`
-  * Payload:
-
-    ```json
-    {
-      "to": "+1234567890",
-      "message": "Hello World"
-    }
-    ```
-
-* **Send Attachment**
-
-  * Endpoint: `POST /send-attachment`
-  * Payload:
-
-    ```json
-    {
-      "to": "+1234567890",
-      "type": "image|video|document",
-      "file": "base64_encoded_file_or_url",
-      "caption": "Optional caption"
-    }
-    ```
+* **User Authentication** – Users must log in (via email/password, OAuth, or token) before accessing the WhatsApp API.
+* **Single WhatsApp Connection per User** – Each authenticated user can connect **only one WhatsApp account**.
+* **Persistent Session Storage** – Store WhatsApp Web session locally (IndexedDB, localStorage, or file) to maintain login across page reloads.
+* **Automatic Session Restore** – Reconnect to the same WhatsApp account using the stored session.
+* **Logout / Reset Connection** – User can disconnect WhatsApp and clear session to reconnect a different account.
 
 ---
 
-## 3. **Technical Approach**
+## 2. **Messaging**
 
-Since this is a **normal WhatsApp account**, the backend would use an unofficial library:
-
-* **Recommended library:** `whatsapp-web.js` (Node.js)
-* **How it works:**
-
-  1. Scan QR code once to log in
-  2. Maintain session locally (or in a database)
-  3. Expose a REST API endpoint that calls the library’s send message/send media functions
-
-**Example flow using `whatsapp-web.js`:**
-
-1. User sends `POST /send-message` → backend calls `client.sendMessage(to, message)`
-2. User sends `POST /send-attachment` → backend calls `client.sendMessage(to, mediaMessage)`
+* **Send Text Messages** – Send messages to any WhatsApp contact using phone numbers.
+* **Send Attachments** – Support sending images, videos, audio, PDFs, or other document types.
+* **Optional Captions** – Add captions when sending media.
 
 ---
 
-## 4. **MVP Architecture**
+## 3. **Client-Side API**
 
-```
-[REST API Server]
-        |
-        |----> [WhatsApp Client (whatsapp-web.js)]
-                     |
-                     |----> WhatsApp Web session (QR login)
-```
+* **Simple Client Functions** – Example functions:
 
-* **Database (Optional):** store session file for persistent login
-* **No webhooks** needed since we only send messages
+  * `sendMessage(userToken, to, message)`
+  * `sendAttachment(userToken, to, file, caption)`
+* **Promise-based / Async API** – Allows smooth integration in front-end applications.
+* **Event Callbacks** – Notify client app when a message is sent, failed, or queued.
 
 ---
 
-## 5. **Limitations**
+## 4. **UI / Developer Tools**
 
-* Must maintain an active WhatsApp session (phone connected)
-* Only supports sending; no receiving or automation
-* Using unofficial libraries → risk of account ban if used aggressively
+* **Login / Auth Interface** – Simple user login and token management.
+* **WhatsApp Connection Interface** – QR code scan for initial authentication, session status display.
+* **Send Interface** – Input fields for recipient number, message, file upload, and send button.
+* **Debug Console** – Shows session status, message logs, and errors.
 
 ---
 
+## 5. **Hosting & Deployment**
 
+* **Static Hosting Compatible** – Works on platforms like Netlify or Vercel.
+* **Fully Client-Side** – All WhatsApp interactions happen on the user’s device; no server required.
+* **Cross-Platform Support** – Works in desktop and mobile browsers.
+
+---
+
+## 6. **Security & Privacy**
+
+* **Session Stored Locally** – Session data is encrypted in local storage to prevent unauthorized access.
+* **Token-Based Authentication** – Only authenticated users can access the API and send messages.
+* **Logout / Session Clear** – Users can revoke WhatsApp connection and authentication token.
+
+---
+
+## 7. **Limitations & Notes**
+
+* Phone must remain connected to WhatsApp Web.
+* Only sending messages is supported; receiving messages is optional.
+* Each user can only connect **one WhatsApp account** at a time.
+* Using unofficial Web API → risk of temporary ban if abused.
+* File uploads may require conversion to base64 or external hosting for static environments.
+
+---
 
