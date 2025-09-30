@@ -111,6 +111,7 @@ If you don't want to build the image from the source, you can use the pre-built 
 
 ### **3. Using Docker (Manual Build)**
 
+
 If you prefer not to use Docker Compose, you can build and run the container manually.
 
 1.  **Build the Docker Image**:
