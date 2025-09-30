@@ -1,25 +1,50 @@
 const qrcode = require('qrcode');
-const { getStatus } = require('../services/whatsapp');
+const { getStatus, initializeClient } = require('../services/sessionManager');
+
+/**
+ * Extracts the session ID from the request headers.
+ * @param {import('express').Request} req - The Express request object.
+ * @returns {string|null} The session ID or null if not found.
+ */
+const getSessionId = (req) => {
+    return req.get('X-API-KEY');
+};
 
 /**
  * Handles the /connect endpoint.
- * Returns the QR code string if available, otherwise the current status.
+ * Returns the QR code string for the session if available, otherwise the current status.
  */
 const getQrCodeString = (req, res) => {
-    const { status, qrCode } = getStatus();
+    const sessionId = getSessionId(req);
+    if (!sessionId) {
+        return res.status(400).json({ error: 'X-API-KEY header is required.' });
+    }
+
+    // Initialize or get the session
+    initializeClient(sessionId);
+    const { status, qrCode } = getStatus(sessionId);
+
     if (status === 'QR Code Generated' && qrCode) {
         res.status(200).send(qrCode);
     } else {
-        res.status(200).json({ status });
+        res.status(200).json({ sessionId, status });
     }
 };
 
 /**
  * Handles the /connect/image endpoint.
- * Returns the QR code as a PNG image.
+ * Returns the QR code for the session as a PNG image.
  */
 const getQrCodeImage = (req, res) => {
-    const { status, qrCode } = getStatus();
+    const sessionId = getSessionId(req);
+    if (!sessionId) {
+        return res.status(400).json({ error: 'X-API-KEY header is required.' });
+    }
+
+    // Initialize or get the session
+    initializeClient(sessionId);
+    const { status, qrCode } = getStatus(sessionId);
+
     if (status === 'QR Code Generated' && qrCode) {
         qrcode.toBuffer(qrCode, (err, buffer) => {
             if (err) {
@@ -32,7 +57,7 @@ const getQrCodeImage = (req, res) => {
             res.end(buffer);
         });
     } else {
-        res.status(404).json({ error: 'QR code not available.', status });
+        res.status(404).json({ error: 'QR code not available.', sessionId, status });
     }
 };
 
