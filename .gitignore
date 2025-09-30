@@ -1,0 +1,8 @@
+# Dependencies
+/node_modules
+
+# Session
+/sessions/
+
+# Environment
+.env
