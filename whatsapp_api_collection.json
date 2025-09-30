@@ -1,0 +1,216 @@
+{
+  "info": {
+    "_postman_id": "a8d1a7d3-2e2e-4b1a-9b7a-0a2b1a1b1b1b",
+    "name": "Simple WhatsApp API",
+    "description": "Postman collection for the Simple WhatsApp API. This collection includes examples for each endpoint and a pre-request script to handle authentication. Set the `MASTER_API_KEY` in your Postman environment to use your own key, or it will default to `SUPER_SECRET_KEY`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get QR Code (String)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/connect",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "connect"
+              ]
+            },
+            "description": "Establishes a new WhatsApp session and returns the QR code as a string for authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get QR Code (Image)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/connect/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "connect",
+                "image"
+              ]
+            },
+            "description": "Establishes a new WhatsApp session and returns the QR code as a PNG image."
+          },
+          "response": []
+        }
+      ],
+      "description": "API endpoints for authentication and session management"
+    },
+    {
+      "name": "Messaging",
+      "item": [
+        {
+          "name": "Send Text Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"number\": \"1234567890\",\n  \"message\": \"Hello from the API!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/send-message",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "send-message"
+              ]
+            },
+            "description": "Sends a text message to a specified number."
+          },
+          "response": []
+        },
+        {
+          "name": "Send Attachment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "number",
+                  "value": "1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "caption",
+                  "value": "Check out this cool file!",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/send-attachment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "send-attachment"
+              ]
+            },
+            "description": "Sends a message with an attachment."
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/send?number=1234567890&message=Hello via GET",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "send"
+              ],
+              "query": [
+                {
+                  "key": "number",
+                  "value": "1234567890"
+                },
+                {
+                  "key": "message",
+                  "value": "Hello via GET"
+                }
+              ]
+            },
+            "description": "Sends a message using a GET request."
+          },
+          "response": []
+        }
+      ],
+      "description": "API endpoints for sending messages"
+    },
+    {
+      "name": "File Upload",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "description": "Uploads a file to the server."
+          },
+          "response": []
+        }
+      ],
+      "description": "API endpoints for file uploads"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// This script runs before every request in the collection.",
+          "// It adds the X-MASTER-KEY header to the request.",
+          "// You can set the 'MASTER_API_KEY' in your Postman environment.",
+          "pm.request.headers.add({",
+          "    key: 'X-MASTER-KEY',",
+          "    value: pm.environment.get('MASTER_API_KEY') || 'SUPER_SECRET_KEY'",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "default"
+    }
+  ]
+}

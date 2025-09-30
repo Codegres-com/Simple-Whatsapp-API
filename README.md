@@ -142,6 +142,28 @@ If you prefer not to use Docker Compose, you can build and run the container man
 
 ## 📖 API Documentation
 
+This project includes interactive API documentation powered by Swagger UI and a pre-configured Postman collection to make testing and integration as easy as possible.
+
+### **Swagger UI**
+
+Once the server is running, you can access the interactive Swagger UI in your browser. This interface allows you to view all available endpoints, see their parameters, and test them live.
+
+-   **URL**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
+When you open the Swagger UI, the `X-MASTER-KEY` will be pre-authorized with the default value (`SUPER_SECRET_KEY` or the value from your `.env` file), so you can start making requests to the protected endpoints immediately.
+
+### **Postman Collection**
+
+A Postman collection is included in the root of this project to help you get started quickly.
+
+1.  **Import the Collection**:
+    -   Find the `whatsapp_api_collection.json` file in the project's root directory.
+    -   In Postman, click **Import** and upload the file.
+
+2.  **Configure Environment (Optional)**:
+    -   The collection comes with a pre-request script that automatically adds the `X-MASTER-KEY` header to every request.
+    -   By default, it uses `SUPER_SECRET_KEY`. To use your own key, create a new Postman Environment, add a variable named `MASTER_API_KEY`, and set its value to your key from the `.env` file.
+
 All endpoints are prefixed with `/api`.
 
 ### **Authentication**
