@@ -24,10 +24,19 @@ const upload = require('../middleware/uploadMiddleware');
  *   get:
  *     summary: Get QR code as a string
  *     tags: [Authentication]
- *     description: Establishes a new WhatsApp session and returns the QR code as a string for authentication.
+ *     description: Establishes a new WhatsApp session and returns the QR code as a string for authentication. Requires a session key.
+ *     parameters:
+ *       - in: header
+ *         name: X-API-KEY
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Your unique session key.
  *     responses:
  *       200:
- *         description: QR code string.
+ *         description: QR code string or session status.
+ *       400:
+ *         description: Missing X-API-KEY header.
  *       500:
  *         description: Server error.
  */
@@ -39,7 +48,14 @@ router.get('/connect', getQrCodeString);
  *   get:
  *     summary: Get QR code as an image
  *     tags: [Authentication]
- *     description: Establishes a new WhatsApp session and returns the QR code as a PNG image.
+ *     description: Establishes a new WhatsApp session and returns the QR code as a PNG image. Requires a session key.
+ *     parameters:
+ *       - in: header
+ *         name: X-API-KEY
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Your unique session key.
  *     responses:
  *       200:
  *         description: QR code image.
@@ -48,6 +64,10 @@ router.get('/connect', getQrCodeString);
  *             schema:
  *               type: string
  *               format: binary
+ *       400:
+ *         description: Missing X-API-KEY header.
+ *       404:
+ *         description: QR code not available.
  *       500:
  *         description: Server error.
  */
@@ -59,8 +79,14 @@ router.get('/connect/image', getQrCodeImage);
  *   post:
  *     summary: Send a text message
  *     tags: [Messaging]
- *     security:
- *       - ApiKeyAuth: []
+ *     description: Sends a text message from a specific session. The session is identified by the `X-API-KEY`, which can be passed either in the request header or in the request body. The header takes precedence.
+ *     parameters:
+ *       - in: header
+ *         name: X-API-KEY
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Your unique session key (can be in header or body).
  *     requestBody:
  *       required: true
  *       content:
@@ -68,15 +94,23 @@ router.get('/connect/image', getQrCodeImage);
  *           schema:
  *             type: object
  *             properties:
- *               number:
+ *               X-API-KEY:
  *                 type: string
+ *                 description: Your unique session key (if not provided in header).
+ *               to:
+ *                 type: string
+ *                 description: The recipient's phone number.
  *               message:
  *                 type: string
+ *                 description: The text message to send.
+ *             required:
+ *               - to
+ *               - message
  *     responses:
  *       200:
  *         description: Message sent successfully.
  *       400:
- *         description: Bad request.
+ *         description: Bad request (e.g., missing parameters or session key).
  */
 router.post('/send-message', sendTextMessage);
 
@@ -86,8 +120,14 @@ router.post('/send-message', sendTextMessage);
  *   post:
  *     summary: Send a message with an attachment
  *     tags: [Messaging]
- *     security:
- *       - ApiKeyAuth: []
+ *     description: Sends a file attachment from a specific session. The session is identified by the `X-API-KEY`, which can be passed either in the request header or in the request body. The header takes precedence. This endpoint supports `multipart/form-data` for direct uploads and `application/json` for sending from a URL or Base64 string.
+ *     parameters:
+ *       - in: header
+ *         name: X-API-KEY
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Your unique session key (can be in header or body).
  *     requestBody:
  *       required: true
  *       content:
@@ -95,18 +135,44 @@ router.post('/send-message', sendTextMessage);
  *           schema:
  *             type: object
  *             properties:
- *               number:
+ *               X-API-KEY:
+ *                 type: string
+ *                 description: Your unique session key (if not provided in header).
+ *               to:
  *                 type: string
  *               caption:
  *                 type: string
  *               file:
  *                 type: string
  *                 format: binary
+ *             required:
+ *                - to
+ *                - file
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               X-API-KEY:
+ *                 type: string
+ *                 description: Your unique session key (if not provided in header).
+ *               to:
+ *                 type: string
+ *               file:
+ *                 type: string
+ *                 description: A public URL to the file or a Base64 encoded string.
+ *               type:
+ *                 type: string
+ *                 description: The MIME type of the file (required for Base64).
+ *               caption:
+ *                 type: string
+ *             required:
+ *               - to
+ *               - file
  *     responses:
  *       200:
  *         description: Attachment sent successfully.
  *       400:
- *         description: Bad request.
+ *         description: Bad request (e.g., missing parameters or session key).
  */
 router.post('/send-attachment', upload.single('file'), sendAttachmentMessage);
 
@@ -116,8 +182,7 @@ router.post('/send-attachment', upload.single('file'), sendAttachmentMessage);
  *   post:
  *     summary: Upload a file
  *     tags: [File Upload]
- *     security:
- *       - ApiKeyAuth: []
+ *     description: Uploads a file to the server and returns a temporary URL. This endpoint does not require a session key (`X-API-KEY`).
  *     requestBody:
  *       required: true
  *       content:
@@ -142,9 +207,14 @@ router.post('/upload', upload.single('file'), uploadFile);
  *   get:
  *     summary: Send a message via GET request
  *     tags: [Messaging]
- *     security:
- *       - ApiKeyAuth: []
+ *     description: A simple GET request to send a text message or an attachment via URL. Requires a session key.
  *     parameters:
+ *       - in: header
+ *         name: X-API-KEY
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Your unique session key.
  *       - in: query
  *         name: number
  *         schema:
@@ -155,13 +225,19 @@ router.post('/upload', upload.single('file'), uploadFile);
  *         name: message
  *         schema:
  *           type: string
- *         required: true
- *         description: The message content.
+ *         required: false
+ *         description: The text message to send (used as caption if `attachmentUrl` is present).
+ *       - in: query
+ *         name: attachmentUrl
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: A URL to a file to send as an attachment.
  *     responses:
  *       200:
  *         description: Message sent successfully.
  *       400:
- *         description: Bad request.
+ *         description: Bad request (e.g., missing parameters or session key).
  */
 router.get('/send', sendFromApi);
 

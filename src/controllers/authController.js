@@ -1,14 +1,6 @@
 const qrcode = require('qrcode');
 const { getStatus, initializeClient } = require('../services/sessionManager');
-
-/**
- * Extracts the session ID from the request headers.
- * @param {import('express').Request} req - The Express request object.
- * @returns {string|null} The session ID or null if not found.
- */
-const getSessionId = (req) => {
-    return req.get('X-API-KEY');
-};
+const { getSessionId } = require('../utils/apiKeyExtractor');
 
 /**
  * Handles the /connect endpoint.

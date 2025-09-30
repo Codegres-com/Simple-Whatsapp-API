@@ -168,15 +168,17 @@ All endpoints are prefixed with `/api`.
 
 ### **Authentication**
 
-This API uses a two-key system for security and session management:
+This API uses a two-key system for security and session management. Both keys can be provided in either the request header or the request body for `POST` requests, giving you more flexibility. For `GET` requests, they must be in the header.
 
 1.  **Master Key (`X-MASTER-KEY`)**:
-    -   This is a global key that grants access to the API server.
-    -   It must be included in the header of **every single request**.
+    -   This is a global key that grants access to the entire API server.
+    -   It can be included in the `X-MASTER-KEY` header or as a field in the JSON request body. The header will always take precedence if both are provided.
     -   This is the key you set in your `.env` file.
 
 2.  **Session Key (`X-API-KEY`)**:
     -   This key identifies a specific WhatsApp session (i.e., a specific phone number).
+    -   For `POST` requests, it can be in the `X-API-KEY` header or a field in the JSON/form-data body.
+    -   For `GET` requests, it must be in the `X-API-KEY` header.
     -   You can invent any unique string for each session (e.g., `user1_phone`, `work_account`, a random hash, etc.).
     -   The first time a new `X-API-KEY` is used with the `/connect` endpoint, a new session will be created for it.
 
@@ -266,12 +268,12 @@ Once connected, the server will save the session data in the `./sessions` folder
 #### 5. **Send Text Message (POST)**
 
 -   **Endpoint**: `POST /send-message`
--   **Headers**:
-    -   `X-MASTER-KEY: your_global_master_key_here`
-    -   `X-API-KEY: your_unique_session_key`
+-   **Headers**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Description**: Sends a plain text message. The `X-API-KEY` can be in the header or, as shown below, in the request body.
 -   **Payload**: `application/json`
     ```json
     {
+      "X-API-KEY": "your_unique_session_key",
       "to": "+1234567890",
       "message": "Hello from the API!"
     }
@@ -281,16 +283,16 @@ Once connected, the server will save the session data in the `./sessions` folder
 
 -   **Endpoint**: `POST /send-attachment`
 -   **Description**: Sends an attachment to a specified number. This endpoint supports three methods: direct file upload, from a URL, or from a Base64 string.
--   **Headers**:
-    -   `X-MASTER-KEY: your_global_master_key_here`
-    -   `X-API-KEY: your_unique_session_key`
+-   **Headers**: `X-MASTER-KEY: your_global_master_key_here`
 
 ---
 
 ##### **Method 1: Direct File Upload**
 
 -   **Content-Type**: `multipart/form-data`
+-   **Description**: The `X-API-KEY` can be in the header or, as shown below, as a form field.
 -   **Body Fields**:
+    -   `X-API-KEY`: Your unique session key.
     -   `to`: The recipient's phone number.
     -   `file`: The file to be sent.
     -   `caption` (optional): A caption for the file.
@@ -298,7 +300,7 @@ Once connected, the server will save the session data in the `./sessions` folder
     ```bash
     curl -X POST http://localhost:3000/api/send-attachment \
     -H "X-MASTER-KEY: your_global_master_key_here" \
-    -H "X-API-KEY: your_unique_session_key" \
+    -F "X-API-KEY=your_unique_session_key" \
     -F "to=+1234567890" \
     -F "file=@/path/to/your/document.pdf" \
     -F "caption=Here is the document you requested."
@@ -309,9 +311,11 @@ Once connected, the server will save the session data in the `./sessions` folder
 ##### **Method 2: From URL or Base64**
 
 -   **Content-Type**: `application/json`
+-   **Description**: The `X-API-KEY` can be in the header or, as shown below, in the request body.
 -   **Payload**:
     ```json
     {
+      "X-API-KEY": "your_unique_session_key",
       "to": "+1234567890",
       "file": "url_or_base64_string",
       "type": "image/png", // Required only for Base64
@@ -326,8 +330,7 @@ Once connected, the server will save the session data in the `./sessions` folder
     curl -X POST http://localhost:3000/api/send-attachment \
     -H "Content-Type: application/json" \
     -H "X-MASTER-KEY: your_global_master_key_here" \
-    -H "X-API-KEY: your_unique_session_key" \
-    -d '{"to": "+1234567890", "file": "https://i.imgur.com/some-image.jpeg", "caption": "From a URL"}'
+    -d '{"X-API-KEY": "your_unique_session_key", "to": "+1234567890", "file": "https://i.imgur.com/some-image.jpeg", "caption": "From a URL"}'
     ```
 
 ---
