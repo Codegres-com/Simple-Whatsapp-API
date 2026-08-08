@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Codegres-com/Simple-Whatsapp-API#readme",
   "dependencies": {
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "multer": "^2.0.2",
