@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import controllers
-const { getQrCodeString, getQrCodeImage, logout, logoutAll, cleanupInactive } = require('../controllers/authController');
+const { getQrCodeString, getQrCodeImage, logout, logoutAll, cleanupInactive, getActiveSessions } = require('../controllers/authController');
 const { sendTextMessage, sendAttachmentMessage, sendFromApi } = require('../controllers/messageController');
 const { uploadFile, cleanupUploads } = require('../controllers/uploadController');
 const upload = require('../middleware/uploadMiddleware');
@@ -107,6 +107,21 @@ router.post('/logout', logout);
  *         description: All sessions closed successfully.
  */
 router.post('/logout-all', logoutAll);
+
+/**
+ * @swagger
+ * /api/sessions:
+ *   get:
+ *     summary: List active sessions and counts
+ *     tags: [Authentication]
+ *     description: Returns a list of all active/stored sessions along with total counts.
+ *     responses:
+ *       200:
+ *         description: List of sessions and counts.
+ *       500:
+ *         description: Server error.
+ */
+router.get('/sessions', getActiveSessions);
 
 /**
  * @swagger

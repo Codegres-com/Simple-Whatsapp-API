@@ -428,6 +428,55 @@ const cleanInactiveSessions = async (maxInactiveDays) => {
     };
 };
 
+/**
+ * Lists all active and stored sessions with details and counts.
+ * @returns {{ totalCount: number, activeMemoryCount: number, sessions: Array<{ sessionId: string, status: string, isReady: boolean, lastActivity: string }> }}
+ */
+const listSessions = () => {
+    const sessionMap = new Map();
+
+    // Collect active memory sessions
+    for (const [id, session] of sessions.entries()) {
+        const lastActivityMs = getSessionLastActivity(id);
+        sessionMap.set(id, {
+            sessionId: id,
+            status: session.status || 'Unknown',
+            isReady: session.status === 'Ready',
+            inMemory: true,
+            lastActivity: new Date(lastActivityMs).toISOString()
+        });
+    }
+
+    // Collect sessions stored on disk that might not be loaded in memory
+    if (fs.existsSync(SESSIONS_DIR)) {
+        const entries = fs.readdirSync(SESSIONS_DIR);
+        for (const entry of entries) {
+            if (entry.startsWith('session-')) {
+                const id = entry.replace('session-', '');
+                if (!sessionMap.has(id)) {
+                    const lastActivityMs = getSessionLastActivity(id);
+                    sessionMap.set(id, {
+                        sessionId: id,
+                        status: 'Stored (Inactive in memory)',
+                        isReady: false,
+                        inMemory: false,
+                        lastActivity: new Date(lastActivityMs).toISOString()
+                    });
+                }
+            }
+        }
+    }
+
+    const sessionList = Array.from(sessionMap.values());
+    const activeMemoryCount = sessionList.filter(s => s.inMemory && s.isReady).length;
+
+    return {
+        totalCount: sessionList.length,
+        activeMemoryCount,
+        sessions: sessionList
+    };
+};
+
 module.exports = {
     initializeClient,
     getStatus,
@@ -435,6 +484,7 @@ module.exports = {
     destroySession,
     destroyAllSessions,
     cleanInactiveSessions,
+    listSessions,
     touchSessionActivity,
     sendMessage,
     sendAttachment

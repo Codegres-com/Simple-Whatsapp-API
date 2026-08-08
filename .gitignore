@@ -6,3 +6,12 @@
 
 # Environment
 .env
+
+# Logs
+/logs/
+
+# Uploads
+/uploads/
+
+# Deploy
+deploy.sh

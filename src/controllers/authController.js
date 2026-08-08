@@ -105,10 +105,30 @@ const cleanupInactive = async (req, res) => {
     }
 };
 
+/**
+ * Handles listing active sessions and total counts.
+ */
+const getActiveSessions = async (req, res) => {
+    try {
+        const { listSessions } = require('../services/sessionManager');
+        const data = listSessions();
+        res.status(200).json({
+            success: true,
+            totalCount: data.totalCount,
+            activeMemoryCount: data.activeMemoryCount,
+            sessions: data.sessions
+        });
+    } catch (error) {
+        console.error('Failed to list active sessions:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 module.exports = {
     getQrCodeString,
     getQrCodeImage,
     logout,
     logoutAll,
-    cleanupInactive
+    cleanupInactive,
+    getActiveSessions
 };
