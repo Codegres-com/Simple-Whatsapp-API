@@ -1,0 +1,9 @@
+[2026-08-08T16:33:54.476Z] App: "SistemaVentas" | Key: "key***" | Method: GET | Endpoint: /api/connect | Status: 200 | IP: ::1
+[2026-08-08T16:34:19.040Z] App: "ModuloCRM" | Key: "key***" | Method: GET | Endpoint: /api/connect | Status: 200 | IP: ::1
+[2026-08-08T16:36:29.915Z] App: "UNAUTHORIZED" | Key: "dfg***" | Method: POST | Endpoint: /api/logout-all | Status: 401 | IP: ::1 | Invalid or missing master API key
+[2026-08-08T16:36:58.373Z] App: "UNAUTHORIZED" | Key: "Mur***" | Method: POST | Endpoint: /api/logout-all | Status: 401 | IP: ::1 | Invalid or missing master API key
+[2026-08-08T16:37:31.855Z] App: "AppPrincipal" | Key: "Chi***" | Method: POST | Endpoint: /api/logout-all | Status: 200 | IP: ::1
+[2026-08-08T16:56:50.096Z] App: "AppPrincipal" | Key: "Chi***" | Method: POST | Endpoint: /api/logout-all | Status: 200 | IP: ::1
+[2026-08-08T10:59:26.175-06:00] App: "AppPrincipal" | Key: "Chi***" | Method: GET | Endpoint: /api/connect?X-API-KEY=test-tz | Status: 200 | IP: ::1
+[2026-08-08T11:18:11.356-06:00] App: "AppPrincipal" | Key: "Chi***" | Method: POST | Endpoint: /api/upload/cleanup?minutes=5 | Status: 200 | IP: ::1
+[2026-08-08T11:19:50.605-06:00] App: "AppPrincipal" | Key: "Chi***" | Method: POST | Endpoint: /api/upload/cleanup?minutes=5 | Status: 200 | IP: ::1

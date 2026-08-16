@@ -1,20 +1,19 @@
 const qrcode = require('qrcode');
-const { getStatus, initializeClient } = require('../services/sessionManager');
+const { getStatus, initializeClient, waitForSession } = require('../services/sessionManager');
 const { getSessionId } = require('../utils/apiKeyExtractor');
 
 /**
  * Handles the /connect endpoint.
  * Returns the QR code string for the session if available, otherwise the current status.
  */
-const getQrCodeString = (req, res) => {
+const getQrCodeString = async (req, res) => {
     const sessionId = getSessionId(req);
     if (!sessionId) {
         return res.status(400).json({ error: 'X-API-KEY header is required.' });
     }
 
-    // Initialize or get the session
-    initializeClient(sessionId);
-    const { status, qrCode } = getStatus(sessionId);
+    // Wait for session to generate QR or reach status
+    const { status, qrCode } = await waitForSession(sessionId);
 
     if (status === 'QR Code Generated' && qrCode) {
         res.status(200).send(qrCode);
@@ -27,15 +26,14 @@ const getQrCodeString = (req, res) => {
  * Handles the /connect/image endpoint.
  * Returns the QR code for the session as a PNG image.
  */
-const getQrCodeImage = (req, res) => {
+const getQrCodeImage = async (req, res) => {
     const sessionId = getSessionId(req);
     if (!sessionId) {
         return res.status(400).json({ error: 'X-API-KEY header is required.' });
     }
 
-    // Initialize or get the session
-    initializeClient(sessionId);
-    const { status, qrCode } = getStatus(sessionId);
+    // Wait for session to generate QR or reach status
+    const { status, qrCode } = await waitForSession(sessionId);
 
     if (status === 'QR Code Generated' && qrCode) {
         qrcode.toBuffer(qrCode, (err, buffer) => {
@@ -53,7 +51,84 @@ const getQrCodeImage = (req, res) => {
     }
 };
 
+/**
+ * Handles closing a specific session.
+ */
+const logout = async (req, res) => {
+    const sessionId = getSessionId(req);
+    if (!sessionId) {
+        return res.status(400).json({ error: 'X-API-KEY header is required.' });
+    }
+
+    try {
+        const { destroySession } = require('../services/sessionManager');
+        await destroySession(sessionId);
+        res.status(200).json({ success: true, message: `Session ${sessionId} has been closed and removed.` });
+    } catch (error) {
+        console.error(`Failed to logout session ${sessionId}:`, error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Handles closing all active sessions and cleaning up session data.
+ */
+const logoutAll = async (req, res) => {
+    try {
+        const { destroyAllSessions } = require('../services/sessionManager');
+        await destroyAllSessions();
+        res.status(200).json({ success: true, message: 'All active sessions have been closed and data removed.' });
+    } catch (error) {
+        console.error('Failed to logout all sessions:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Handles cleaning up inactive/abandoned sessions.
+ */
+const cleanupInactive = async (req, res) => {
+    try {
+        const { cleanInactiveSessions } = require('../services/sessionManager');
+        const days = parseFloat(req.query.days || (req.body ? req.body.days : undefined) || 7);
+        const result = await cleanInactiveSessions(days);
+        res.status(200).json({
+            success: true,
+            message: `Cleanup completed. Removed ${result.cleanedCount} inactive session(s) older than ${result.thresholdDays} day(s).`,
+            cleanedCount: result.cleanedCount,
+            cleanedSessions: result.cleanedSessions,
+            thresholdDays: result.thresholdDays
+        });
+    } catch (error) {
+        console.error('Failed to clean inactive sessions:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Handles listing active sessions and total counts.
+ */
+const getActiveSessions = async (req, res) => {
+    try {
+        const { listSessions } = require('../services/sessionManager');
+        const data = listSessions();
+        res.status(200).json({
+            success: true,
+            totalCount: data.totalCount,
+            activeMemoryCount: data.activeMemoryCount,
+            sessions: data.sessions
+        });
+    } catch (error) {
+        console.error('Failed to list active sessions:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 module.exports = {
     getQrCodeString,
-    getQrCodeImage
+    getQrCodeImage,
+    logout,
+    logoutAll,
+    cleanupInactive,
+    getActiveSessions
 };

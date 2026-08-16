@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 // Import controllers
-const { getQrCodeString, getQrCodeImage } = require('../controllers/authController');
+const { getQrCodeString, getQrCodeImage, logout, logoutAll, cleanupInactive, getActiveSessions } = require('../controllers/authController');
 const { sendTextMessage, sendAttachmentMessage, sendFromApi } = require('../controllers/messageController');
-const { uploadFile } = require('../controllers/uploadController');
+const { uploadFile, cleanupUploads } = require('../controllers/uploadController');
 const upload = require('../middleware/uploadMiddleware');
 
 /**
@@ -72,6 +72,77 @@ router.get('/connect', getQrCodeString);
  *         description: Server error.
  */
 router.get('/connect/image', getQrCodeImage);
+
+/**
+ * @swagger
+ * /api/logout:
+ *   post:
+ *     summary: Close specific session
+ *     tags: [Authentication]
+ *     description: Closes and removes a specific WhatsApp session identified by `X-API-KEY`.
+ *     parameters:
+ *       - in: header
+ *         name: X-API-KEY
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Your unique session key.
+ *     responses:
+ *       200:
+ *         description: Session closed successfully.
+ *       400:
+ *         description: Missing X-API-KEY header.
+ */
+router.post('/logout', logout);
+
+/**
+ * @swagger
+ * /api/logout-all:
+ *   post:
+ *     summary: Close all sessions
+ *     tags: [Authentication]
+ *     description: Closes all active WhatsApp sessions and deletes stored session data.
+ *     responses:
+ *       200:
+ *         description: All sessions closed successfully.
+ */
+router.post('/logout-all', logoutAll);
+
+/**
+ * @swagger
+ * /api/sessions:
+ *   get:
+ *     summary: List active sessions and counts
+ *     tags: [Authentication]
+ *     description: Returns a list of all active/stored sessions along with total counts.
+ *     responses:
+ *       200:
+ *         description: List of sessions and counts.
+ *       500:
+ *         description: Server error.
+ */
+router.get('/sessions', getActiveSessions);
+
+/**
+ * @swagger
+ * /api/cleanup-inactive:
+ *   post:
+ *     summary: Clean up abandoned inactive sessions
+ *     tags: [Authentication]
+ *     description: Identifies and removes sessions that have not been active for a specified number of days.
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: number
+ *           default: 7
+ *         required: false
+ *         description: Number of inactive days threshold. Sessions unused for longer than this will be unlinked and deleted.
+ *     responses:
+ *       200:
+ *         description: Cleanup completed successfully.
+ */
+router.post('/cleanup-inactive', cleanupInactive);
 
 /**
  * @swagger
@@ -200,6 +271,27 @@ router.post('/send-attachment', upload.single('file'), sendAttachmentMessage);
  *         description: No file uploaded.
  */
 router.post('/upload', upload.single('file'), uploadFile);
+
+/**
+ * @swagger
+ * /api/upload/cleanup:
+ *   post:
+ *     summary: Clean up temporary uploaded files
+ *     tags: [File Upload]
+ *     description: Deletes temporary uploaded files in the uploads folder older than a specified number of minutes.
+ *     parameters:
+ *       - in: query
+ *         name: minutes
+ *         schema:
+ *           type: number
+ *           default: 5
+ *         required: false
+ *         description: Threshold in minutes. Uploaded files older than this will be permanently purged.
+ *     responses:
+ *       200:
+ *         description: Upload cleanup completed successfully.
+ */
+router.post('/upload/cleanup', cleanupUploads);
 
 /**
  * @swagger

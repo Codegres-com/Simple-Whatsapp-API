@@ -1,30 +1,35 @@
 # Simple WhatsApp API
 
-A multi-session, easy-to-deploy API that allows you to send text messages and attachments from multiple WhatsApp accounts with minimal setup.
+Una API multi-sesión y fácil de desplegar que te permite enviar mensajes de texto y archivos adjuntos desde múltiples cuentas de WhatsApp con una configuración mínima.
 
-## Features
+## Características
 
-- **Multi-Session Support**: Connect and manage multiple WhatsApp accounts simultaneously. Each session is tied to its own unique API key.
-- **Easy Login**: Scan a QR code just once per session to connect your WhatsApp account.
-- **Persistent Sessions**: Sessions are saved locally, so the server can be restarted without needing to log in again.
-- **Send Text Messages**: A simple endpoint to send plain text messages from a specific session.
-- **Send Attachments**: Send images, videos, or documents directly via file upload, URL, or a Base64 encoded string.
-- **File Uploads**: A dedicated endpoint to upload files and receive a temporary URL, perfect for sending as attachments later.
-- **Secure**:
-    - Protect your entire server with a global **Master API Key**.
-    - Manage individual WhatsApp sessions with a per-session **API Key**.
-- **Dynamic QR Codes**: Fetch the login QR code for any session as a string or a PNG image via API endpoints.
+- **Soporte multi-sesión**: Conecta y gestiona varias cuentas de WhatsApp simultáneamente. Cada sesión está vinculada a su propia clave API única.
+- **Inicio de sesión sencillo**: Escanea un código QR una sola vez por sesión para conectar tu cuenta de WhatsApp.
+- **Sesiones persistentes**: Las sesiones se guardan localmente, por lo que el servidor puede reiniciarse sin necesidad de volver a iniciar sesión.
+- **Desvinculación limpia (Logout)**: Endpoint para cerrar sesión que revoca las credenciales de WhatsApp en el servidor y las elimina del teléfono.
+- **Depuración automática de sesiones abandonadas**: Endpoint para limpiar sesiones inactivas según un umbral de días.
+- **Protección Anti-Spam integrada**: Pausas automáticas configurables entre envíos, límite de mensajes por minuto y cuota máxima diaria por sesión.
+- **Soporte de Múltiples Claves Maestras por Aplicación**: Asigna claves maestras únicas por sistema (ej. Ventas, CRM) para rastrear el uso.
+- **Logs de acceso diarios por zona horaria**: Registra accesos y peticiones en logs diarios rotativos (`logs/access-YYYY-MM-DD.log`) configurados en horario local (ej. Guatemala `America/Guatemala`).
+- **Envío de mensajes de texto**: Un endpoint simple para enviar mensajes de texto plano desde una sesión específica.
+- **Envío de archivos adjuntos**: Envía imágenes, videos o documentos directamente mediante carga de archivos, URL o una cadena codificada en Base64.
+- **Carga de archivos**: Un endpoint dedicado para subir archivos y recibir una URL temporal, ideal para enviarlos como adjuntos más tarde.
+- **Seguridad**:
+    - Protege todo el servidor con una o varias **Claves API maestras**.
+    - Gestiona sesiones individuales de WhatsApp con una **Clave API** por sesión.
+- **Códigos QR dinámicos**: Obtén el código QR de inicio de sesión de cualquier sesión como cadena de texto o imagen PNG mediante endpoints de la API.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Primeros pasos
 
-### **Prerequisites**
+### **Requisitos previos**
 
-- [Node.js](https://nodejs.org/) (v16 or higher recommended)
-- One or more WhatsApp accounts
+- [Node.js](https://nodejs.org/) (se recomienda v16 o superior)
+- Una o más cuentas de WhatsApp
 
-### **1. Clone and Install Dependencies**
+### **1. Clonar e instalar dependencias**
 
 ```bash
 git clone https://github.com/Codegres-com/Simple-Whatsapp-API.git
@@ -32,18 +37,37 @@ cd Simple-Whatsapp-API
 npm install
 ```
 
-### **2. Configure Your Environment**
+### **2. Configurar el entorno**
 
-Create a `.env` file in the root of the project and add your Master API Key. You can invent any secret strings for the keys.
+Crea un archivo `.env` en la raíz del proyecto y añade la configuración deseada:
 
-```
+```env
 # .env
 
-# This key protects the entire server. All API requests must include it.
-MASTER_API_KEY=your_global_master_key_here
+# Claves maestras por aplicación (Formato clave:NombreAplicacion separadas por coma)
+MASTER_API_KEYS=key_ventas:SistemaVentas,key_crm:ModuloCRM,Chimpanzee24.gt:AppPrincipal
+
+# Compatibilidad con clave única legacy
+MASTER_API_KEY=Chimpanzee24.gt
+
+PORT=3000
+
+# Configuración personalizada de Swagger UI
+SWAGGER_TITLE=Mi API Personalizada
+SWAGGER_DESCRIPTION=Servicio de integración para el envío de mensajes de WhatsApp.
+SERVER_URL=http://localhost:3000
+
+# Registro de logs diarios (1 = activado, 0 = desactivado)
+ENABLE_LOGS=1
+TIMEZONE=America/Guatemala
+
+# Protección Anti-Spam por Sesión
+RATE_LIMIT_PER_MINUTE=15      # Máximo mensajes por minuto por sesión (0 desactiva)
+MESSAGE_DELAY_MS=2000         # Pausa entre mensajes en milisegundos (2000 = 2s)
+DAILY_MESSAGE_LIMIT=500       # Límite diario por sesión (0 desactiva)
 ```
 
-### **3. Start the Server**
+### **3. Iniciar el servidor**
 
 ```bash
 npm start
@@ -51,52 +75,52 @@ npm start
 
 ---
 
-## 🐳 Running with Docker
+## 🐳 Ejecución con Docker
 
-You can also run this application using Docker and Docker Compose for a more isolated and reproducible setup.
+También puedes ejecutar esta aplicación con Docker y Docker Compose para un entorno más aislado y reproducible.
 
-### **1. Using Docker Compose (Recommended)**
+### **1. Usar Docker Compose (recomendado)**
 
-This is the easiest way to get started.
+Es la forma más sencilla de empezar.
 
-1.  **Create an Environment File**:
-    Create a `.env` file in the root of the project. This file will be used by Docker Compose to set the environment variables inside the container.
+1.  **Crear un archivo de entorno**:
+    Crea un archivo `.env` en la raíz del proyecto. Este archivo será usado por Docker Compose para establecer las variables de entorno dentro del contenedor.
 
     ```
     # .env
 
-    # The master key to protect the server
+    # La clave maestra para proteger el servidor
     MASTER_API_KEY=yoursecretkey
 
-    # The port to run the server on (optional, defaults to 3000)
+    # El puerto en el que se ejecutará el servidor (opcional, por defecto 3000)
     PORT=3000
     ```
 
-2.  **Build and Run the Container**:
-    Run the following command to build the Docker image and start the container in the background:
+2.  **Construir y ejecutar el contenedor**:
+    Ejecuta el siguiente comando para construir la imagen de Docker e iniciar el contenedor en segundo plano:
 
     ```bash
     docker compose up --build -d
     ```
 
-    The server will now be running on the port you specified (or the default, 3000).
+    El servidor estará ejecutándose en el puerto que hayas especificado (o el predeterminado, 3000).
 
-3.  **To Stop the Server**:
+3.  **Para detener el servidor**:
     ```bash
     docker compose down
     ```
 
-### **2. Using the Pre-built Docker Hub Image**
+### **2. Usar la imagen preconstruida de Docker Hub**
 
-If you don't want to build the image from the source, you can use the pre-built image from Docker Hub.
+Si no quieres construir la imagen desde el código fuente, puedes usar la imagen preconstruida de Docker Hub.
 
-1.  **Pull the Image**:
+1.  **Descargar la imagen**:
     ```bash
     docker pull codegres/simple-whatsapp-api:latest
     ```
 
-2.  **Run the Image**:
-    You still need to provide the environment variables and mount the volumes.
+2.  **Ejecutar la imagen**:
+    Aún necesitas proporcionar las variables de entorno y montar los volúmenes.
 
     ```bash
     docker run -d \
@@ -109,18 +133,17 @@ If you don't want to build the image from the source, you can use the pre-built 
       codegres/simple-whatsapp-api:latest
     ```
 
-### **3. Using Docker (Manual Build)**
+### **3. Usar Docker (construcción manual)**
 
+Si prefieres no usar Docker Compose, puedes construir y ejecutar el contenedor manualmente.
 
-If you prefer not to use Docker Compose, you can build and run the container manually.
-
-1.  **Build the Docker Image**:
+1.  **Construir la imagen de Docker**:
     ```bash
     docker build -t whatsapp-api .
     ```
 
-2.  **Run the Docker Container**:
-    You must pass the `MASTER_API_KEY` and map the port. You also need to create and mount volumes to persist the `sessions` and `uploads` data.
+2.  **Ejecutar el contenedor de Docker**:
+    Debes pasar la `MASTER_API_KEY` y mapear el puerto. También necesitas crear y montar volúmenes para persistir los datos de `sessions` y `uploads`.
 
     ```bash
     docker run -d \
@@ -132,85 +155,85 @@ If you prefer not to use Docker Compose, you can build and run the container man
       -v whatsapp_uploads:/usr/src/app/uploads \
       whatsapp-api
     ```
-    - `-d`: Run in detached mode.
-    - `-p`: Map port 3000 on your host to port 3000 in the container.
-    - `-e`: Set environment variables.
-    - `--name`: Assign a name to the container.
-    - `-v`: Mount named volumes to persist data.
+    - `-d`: Ejecutar en modo detached (segundo plano).
+    - `-p`: Mapear el puerto 3000 del host al puerto 3000 del contenedor.
+    - `-e`: Establecer variables de entorno.
+    - `--name`: Asignar un nombre al contenedor.
+    - `-v`: Montar volúmenes con nombre para persistir los datos.
 
 ---
 
-## 📖 API Documentation
+## 📖 Documentación de la API
 
-This project includes interactive API documentation powered by Swagger UI and a pre-configured Postman collection to make testing and integration as easy as possible.
+Este proyecto incluye documentación interactiva de la API con Swagger UI y una colección de Postman preconfigurada para facilitar las pruebas y la integración.
 
 ### **Swagger UI**
 
-Once the server is running, you can access the interactive Swagger UI in your browser. This interface allows you to view all available endpoints, see their parameters, and test them live.
+Una vez que el servidor esté en ejecución, puedes acceder a la interfaz interactiva de Swagger UI en tu navegador. Esta interfaz te permite ver todos los endpoints disponibles, consultar sus parámetros y probarlos en vivo.
 
 -   **URL**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
-When you open the Swagger UI, the `X-MASTER-KEY` will be pre-authorized with the default value (`SUPER_SECRET_KEY` or the value from your `.env` file), so you can start making requests to the protected endpoints immediately.
+Al abrir Swagger UI, la `X-MASTER-KEY` estará preautorizada con el valor predeterminado (`SUPER_SECRET_KEY` o el valor de tu archivo `.env`), para que puedas empezar a hacer peticiones a los endpoints protegidos de inmediato.
 
-### **Postman Collection**
+### **Colección de Postman**
 
-A Postman collection is included in the root of this project to help you get started quickly.
+En la raíz de este proyecto se incluye una colección de Postman para ayudarte a empezar rápidamente.
 
-1.  **Import the Collection**:
-    -   Find the `whatsapp_api_collection.json` file in the project's root directory.
-    -   In Postman, click **Import** and upload the file.
+1.  **Importar la colección**:
+    -   Encuentra el archivo `whatsapp_api_collection.json` en el directorio raíz del proyecto.
+    -   En Postman, haz clic en **Import** y sube el archivo.
 
-2.  **Configure Environment (Optional)**:
-    -   The collection comes with a pre-request script that automatically adds the `X-MASTER-KEY` header to every request.
-    -   By default, it uses `SUPER_SECRET_KEY`. To use your own key, create a new Postman Environment, add a variable named `MASTER_API_KEY`, and set its value to your key from the `.env` file.
+2.  **Configurar el entorno (opcional)**:
+    -   La colección incluye un script de pre-solicitud que añade automáticamente el encabezado `X-MASTER-KEY` a cada petición.
+    -   Por defecto, usa `SUPER_SECRET_KEY`. Para usar tu propia clave, crea un nuevo entorno de Postman, añade una variable llamada `MASTER_API_KEY` y establece su valor con la clave de tu archivo `.env`.
 
-All endpoints are prefixed with `/api`.
+Todos los endpoints tienen el prefijo `/api`.
 
-### **Authentication**
+### **Autenticación**
 
-This API uses a two-key system for security and session management. Both keys can be provided in either the request header or the request body for `POST` requests, giving you more flexibility. For `GET` requests, they must be in the header.
+Esta API utiliza un sistema de dos claves para la seguridad y la gestión de sesiones. Ambas claves pueden proporcionarse en el encabezado de la petición o en el cuerpo de las peticiones `POST`, lo que te da más flexibilidad. En las peticiones `GET`, deben ir en el encabezado.
 
-1.  **Master Key (`X-MASTER-KEY`)**:
-    -   This is a global key that grants access to the entire API server.
-    -   It can be included in the `X-MASTER-KEY` header or as a field in the JSON request body. The header will always take precedence if both are provided.
-    -   This is the key you set in your `.env` file.
+1.  **Clave maestra (`X-MASTER-KEY`)**:
+    -   Es una clave global que concede acceso a todo el servidor de la API.
+    -   Puede incluirse en el encabezado `X-MASTER-KEY` o como campo en el cuerpo JSON de la petición. El encabezado siempre tendrá prioridad si se proporcionan ambos.
+    -   Es la clave que configuras en tu archivo `.env`.
 
-2.  **Session Key (`X-API-KEY`)**:
-    -   This key identifies a specific WhatsApp session (i.e., a specific phone number).
-    -   For `POST` requests, it can be in the `X-API-KEY` header or a field in the JSON/form-data body.
-    -   For `GET` requests, it must be in the `X-API-KEY` header.
-    -   You can invent any unique string for each session (e.g., `user1_phone`, `work_account`, a random hash, etc.).
-    -   The first time a new `X-API-KEY` is used with the `/connect` endpoint, a new session will be created for it.
+2.  **Clave de sesión (`X-API-KEY`)**:
+    -   Esta clave identifica una sesión específica de WhatsApp (es decir, un número de teléfono concreto).
+    -   En las peticiones `POST`, puede ir en el encabezado `X-API-KEY` o como campo en el cuerpo JSON/form-data.
+    -   En las peticiones `GET`, debe ir en el encabezado `X-API-KEY`.
+    -   Puedes inventar cualquier cadena única para cada sesión (por ejemplo, `user1_phone`, `work_account`, un hash aleatorio, etc.).
+    -   La primera vez que se use una nueva `X-API-KEY` con el endpoint `/connect`, se creará una nueva sesión para ella.
 
 ---
 
-## 📲 Connecting a Session
+## 📲 Conectar una sesión
 
-To use a WhatsApp account, you must first connect it to a session key.
+Para usar una cuenta de WhatsApp, primero debes conectarla a una clave de sesión.
 
-1.  Choose a unique `X-API-KEY` for the account you want to connect (e.g., `my-personal-whatsapp`).
-2.  Make a request to one of the connection endpoints with both the master key and your chosen session key. The server will generate a QR code for that specific session.
+1.  Elige una `X-API-KEY` única para la cuenta que quieras conectar (por ejemplo, `my-personal-whatsapp`).
+2.  Haz una petición a uno de los endpoints de conexión con la clave maestra y la clave de sesión elegida. El servidor generará un código QR para esa sesión específica.
 
-    -   **GET `/api/connect`**: Returns the QR code as a string.
-    -   **GET `/api/connect/image`**: Returns the QR code as a PNG image.
+    -   **GET `/api/connect`**: Devuelve el código QR como cadena de texto.
+    -   **GET `/api/connect/image`**: Devuelve el código QR como imagen PNG.
 
-3.  Open WhatsApp on your phone, go to **Settings > Linked Devices**, and scan the QR code.
+3.  Abre WhatsApp en tu teléfono, ve a **Ajustes > Dispositivos vinculados** y escanea el código QR.
 
-Once connected, the server will save the session data in the `./sessions` folder. You won't need to scan the code again for this session unless you log out. Repeat this process for each WhatsApp account you want to use, assigning a different `X-API-KEY` to each.
+Una vez conectado, el servidor guardará los datos de la sesión en la carpeta `./sessions`. No necesitarás volver a escanear el código para esta sesión a menos que cierres sesión. Repite este proceso para cada cuenta de WhatsApp que quieras usar, asignando una `X-API-KEY` diferente a cada una.
 
 ---
 
 ## **Endpoints**
 
-#### 1. **Get Connection Status / QR Code**
+#### 1. **Obtener estado de conexión / código QR**
 
 -   **Endpoint**: `GET /connect`
--   **Description**: Get the current connection status for a session. If a QR code is available, it will be returned as a string. If not, the session status is returned.
--   **Headers**:
+-   **Descripción**: Obtiene el estado de conexión actual de una sesión. Si hay un código QR disponible, se devolverá como cadena de texto. Si no, se devuelve el estado de la sesión.
+-   **Encabezados**:
     -   `X-MASTER-KEY: your_global_master_key_here`
     -   `X-API-KEY: your_unique_session_key`
--   **Response (When QR is ready)**: `200 OK` with the QR string in the body.
--   **Response (When connected)**: `200 OK`
+-   **Respuesta (cuando el QR está listo)**: `200 OK` con la cadena del QR en el cuerpo.
+-   **Respuesta (cuando está conectado)**: `200 OK`
     ```json
     {
       "sessionId": "your_unique_session_key",
@@ -218,59 +241,120 @@ Once connected, the server will save the session data in the `./sessions` folder
     }
     ```
 
-#### 2. **Get QR Code as Image**
+#### 2. **Obtener código QR como imagen**
 
 -   **Endpoint**: `GET /connect/image`
--   **Description**: Get the session's QR code as a PNG image.
--   **Headers**:
+-   **Descripción**: Obtiene el código QR de la sesión como imagen PNG.
+-   **Encabezados**:
     -   `X-MASTER-KEY: your_global_master_key_here`
     -   `X-API-KEY: your_unique_session_key`
--   **Response**: `200 OK` with `Content-Type: image/png`.
+-   **Respuesta**: `200 OK` con `Content-Type: image/png`.
 
-#### 3. **Upload an Attachment (for later use)**
+#### 3. **Cerrar sesión de una cuenta (Logout)**
+
+-   **Endpoint**: `POST /logout`
+-   **Descripción**: Cierra la sesión activa de WhatsApp desvinculando el dispositivo del teléfono y elimina los datos locales.
+-   **Encabezados**:
+    -   `X-MASTER-KEY: your_global_master_key_here`
+    -   `X-API-KEY: your_unique_session_key`
+-   **Respuesta**:
+    ```json
+    {
+      "message": "Session logged out and deleted successfully."
+    }
+    ```
+
+#### 4. **Cerrar todas las sesiones (Logout All)**
+
+-   **Endpoint**: `POST /logout-all`
+-   **Descripción**: Cierra y desvincula todas las sesiones de WhatsApp del servidor.
+-   **Encabezados**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Respuesta**:
+    ```json
+    {
+      "message": "All sessions logged out and deleted successfully."
+    }
+    ```
+
+#### 5. **Depurar sesiones abandonadas**
+
+-   **Endpoint**: `POST /cleanup-inactive`
+-   **Descripción**: Desvincula y elimina sesiones inactivas según el umbral de días indicado.
+-   **Encabezados**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Parámetros de consulta** (opcional): `days` (por defecto `7`).
+-   **Respuesta**:
+    ```json
+    {
+      "success": true,
+      "message": "Cleanup completed. Removed 2 inactive session(s) older than 7 day(s).",
+      "cleanedCount": 2,
+      "cleanedSessions": ["session1", "session2"],
+      "thresholdDays": 7
+    }
+    ```
+
+#### 6. **Subir un archivo adjunto (para uso posterior)**
 
 -   **Endpoint**: `POST /upload`
--   **Description**: Upload a file to get a temporary URL. The URL is valid for 5 minutes and can be used in the `/send` or `/send-attachment` (URL method) endpoints.
--   **Headers**: `X-MASTER-KEY: your_global_master_key_here`
--   **Body**: `multipart/form-data` with a single field named `file`.
--   **Response**:
+-   **Descripción**: Sube un archivo para obtener una URL temporal. La URL es válida durante 5 minutos y puede usarse en los endpoints `/send` o `/send-attachment` (método por URL).
+-   **Encabezados**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Cuerpo**: `multipart/form-data` con un único campo llamado `file`.
+-   **Respuesta**:
     ```json
     {
         "message": "File uploaded successfully.",
         "url": "http://localhost:3000/uploads/1678886400000-123456789.jpg"
     }
     ```
--   **Example `curl` Request**:
+-   **Ejemplo de petición con `curl`**:
     ```bash
     curl -X POST http://localhost:3000/api/upload \
     -H "X-MASTER-KEY: your_global_master_key_here" \
     -F "file=@/path/to/your/image.jpg"
     ```
 
-#### 4. **Send Message (Simple GET)**
+#### 4. **Limpiar archivos adjuntos temporales**
+
+-   **Endpoint**: `POST /upload/cleanup`
+-   **Descripción**: Depura y elimina permanentemente los archivos temporales subidos a la carpeta `uploads/` que superen un umbral de tiempo en minutos.
+-   **Encabezados**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Parámetros de consulta** (opcional):
+    -   `minutes`: Umbral en minutos (por defecto `5` o el valor configurado en `UPLOAD_FILE_TTL_MINUTES`).
+-   **Respuesta**:
+    ```json
+    {
+      "success": true,
+      "message": "Cleanup completed. Removed 2 file(s) older than 5 minute(s).",
+      "cleanedCount": 2,
+      "cleanedFiles": ["1678886400000-sample1.jpg", "1678886400000-sample2.pdf"],
+      "thresholdMinutes": 5
+    }
+    ```
+
+#### 5. **Enviar mensaje (GET simple)**
 
 -   **Endpoint**: `GET /send`
--   **Description**: A simple GET request to send a text message or an attachment via URL.
--   **Headers**:
+-   **Descripción**: Una petición GET simple para enviar un mensaje de texto o un archivo adjunto mediante URL.
+-   **Encabezados**:
     -   `X-MASTER-KEY: your_global_master_key_here`
     -   `X-API-KEY: your_unique_session_key`
--   **Query Parameters**:
-    -   `number`: The recipient's phone number (e.g., `+1234567890`).
-    -   `message`: The text message to send.
-    -   `attachmentUrl` (optional): A URL to a file to send as an attachment. The `message` will be used as the caption.
--   **Example `curl` Request**:
+-   **Parámetros de consulta**:
+    -   `number`: El número de teléfono del destinatario (por ejemplo, `+1234567890`).
+    -   `message`: El mensaje de texto a enviar.
+    -   `attachmentUrl` (opcional): Una URL de un archivo para enviar como adjunto. El `message` se usará como pie de foto.
+-   **Ejemplo de petición con `curl`**:
     ```bash
     curl "http://localhost:3000/api/send?number=+1234567890&message=Hello&attachmentUrl=http://localhost:3000/uploads/file.jpg" \
     -H "X-MASTER-KEY: your_global_master_key_here" \
     -H "X-API-KEY: your_unique_session_key"
     ```
 
-#### 5. **Send Text Message (POST)**
+#### 5. **Enviar mensaje de texto (POST)**
 
 -   **Endpoint**: `POST /send-message`
--   **Headers**: `X-MASTER-KEY: your_global_master_key_here`
--   **Description**: Sends a plain text message. The `X-API-KEY` can be in the header or, as shown below, in the request body.
--   **Payload**: `application/json`
+-   **Encabezados**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Descripción**: Envía un mensaje de texto plano. La `X-API-KEY` puede ir en el encabezado o, como se muestra abajo, en el cuerpo de la petición.
+-   **Carga útil**: `application/json`
     ```json
     {
       "X-API-KEY": "your_unique_session_key",
@@ -279,24 +363,24 @@ Once connected, the server will save the session data in the `./sessions` folder
     }
     ```
 
-#### 6. **Send Attachment (POST)**
+#### 6. **Enviar archivo adjunto (POST)**
 
 -   **Endpoint**: `POST /send-attachment`
--   **Description**: Sends an attachment to a specified number. This endpoint supports three methods: direct file upload, from a URL, or from a Base64 string.
--   **Headers**: `X-MASTER-KEY: your_global_master_key_here`
+-   **Descripción**: Envía un archivo adjunto a un número especificado. Este endpoint admite tres métodos: carga directa de archivo, desde una URL o desde una cadena Base64.
+-   **Encabezados**: `X-MASTER-KEY: your_global_master_key_here`
 
 ---
 
-##### **Method 1: Direct File Upload**
+##### **Método 1: Carga directa de archivo**
 
 -   **Content-Type**: `multipart/form-data`
--   **Description**: The `X-API-KEY` can be in the header or, as shown below, as a form field.
--   **Body Fields**:
-    -   `X-API-KEY`: Your unique session key.
-    -   `to`: The recipient's phone number.
-    -   `file`: The file to be sent.
-    -   `caption` (optional): A caption for the file.
--   **Example `curl` Request**:
+-   **Descripción**: La `X-API-KEY` puede ir en el encabezado o, como se muestra abajo, como campo del formulario.
+-   **Campos del cuerpo**:
+    -   `X-API-KEY`: Tu clave de sesión única.
+    -   `to`: El número de teléfono del destinatario.
+    -   `file`: El archivo a enviar.
+    -   `caption` (opcional): Un pie de foto para el archivo.
+-   **Ejemplo de petición con `curl`**:
     ```bash
     curl -X POST http://localhost:3000/api/send-attachment \
     -H "X-MASTER-KEY: your_global_master_key_here" \
@@ -308,24 +392,24 @@ Once connected, the server will save the session data in the `./sessions` folder
 
 ---
 
-##### **Method 2: From URL or Base64**
+##### **Método 2: Desde URL o Base64**
 
 -   **Content-Type**: `application/json`
--   **Description**: The `X-API-KEY` can be in the header or, as shown below, in the request body.
--   **Payload**:
+-   **Descripción**: La `X-API-KEY` puede ir en el encabezado o, como se muestra abajo, en el cuerpo de la petición.
+-   **Carga útil**:
     ```json
     {
       "X-API-KEY": "your_unique_session_key",
       "to": "+1234567890",
       "file": "url_or_base64_string",
-      "type": "image/png", // Required only for Base64
+      "type": "image/png", // Obligatorio solo para Base64
       "caption": "Optional caption"
     }
     ```
--   **Notes**:
-    -   If `file` is a URL, the server will download it.
-    -   If `file` is a Base64 string, you **must** provide the correct `type` (MIME type).
--   **Example `curl` Request (URL)**:
+-   **Notas**:
+    -   Si `file` es una URL, el servidor la descargará.
+    -   Si `file` es una cadena Base64, **debes** proporcionar el `type` correcto (tipo MIME).
+-   **Ejemplo de petición con `curl` (URL)**:
     ```bash
     curl -X POST http://localhost:3000/api/send-attachment \
     -H "Content-Type: application/json" \
@@ -335,8 +419,8 @@ Once connected, the server will save the session data in the `./sessions` folder
 
 ---
 
-## ⚠️ Limitations
+## ⚠️ Limitaciones
 
--   You must keep your phone connected to the internet for the API to work.
--   This API uses an unofficial library (`whatsapp-web.js`), which may have a risk of your number being banned by WhatsApp if used for spamming. Use responsibly.
--   This API only supports sending messages and does not handle incoming messages or webhooks.
+-   Debes mantener tu teléfono conectado a internet para que la API funcione.
+-   Esta API utiliza una biblioteca no oficial (`whatsapp-web.js`), que puede conllevar el riesgo de que WhatsApp bloquee tu número si se usa para enviar spam. Úsala con responsabilidad.
+-   Esta API solo admite el envío de mensajes y no gestiona mensajes entrantes ni webhooks.

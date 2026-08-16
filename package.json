@@ -1,7 +1,7 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "description": "Simple Whatsapp API - Just connect with QR and start sending messages instantly.",
+  "description": "Mk WhatsApp API - Gateway REST para mensajería y automatización con conexión QR.",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Codegres-com/Simple-Whatsapp-API#readme",
   "dependencies": {
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "multer": "^2.0.2",
