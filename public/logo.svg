@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="waGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25D366"/>
+      <stop offset="50%" stop-color="#128C7E"/>
+      <stop offset="100%" stop-color="#075E54"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="apiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#818CF8"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#25D366" flood-opacity="0.35"/>
+    </filter>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Base Badge Background (Rounded Super-ellipse) -->
+  <rect x="24" y="24" width="464" height="464" rx="110" fill="url(#bgGrad)" stroke="#1E293B" stroke-width="6"/>
+  <rect x="24" y="24" width="464" height="464" rx="110" fill="none" stroke="url(#glowGrad)" stroke-width="2" opacity="0.6"/>
+
+  <!-- Glowing Accent Ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#waGrad)" stroke-width="3" stroke-dasharray="8 12" opacity="0.4"/>
+
+  <!-- WhatsApp Chat Bubble Base with Shadow -->
+  <path d="M256,92 C165.42,92 92,165.42 92,256 C92,286.82 100.55,315.65 115.42,340.23 L96.5,412.5 L171.22,393.75 C195.14,407.45 224.62,415.35 256,415.35 C346.58,415.35 420,341.93 420,256 C420,165.42 346.58,92 256,92 Z" 
+        fill="url(#waGrad)" 
+        filter="url(#shadow)"/>
+
+  <!-- Subtle Inner Bubble Highlight -->
+  <path d="M256,110 C175.37,110 110,175.37 110,256 C110,283.4 117.6,309.05 130.82,330.93 L118,380 L168.4,367.4 C189.65,379.57 215.86,386.6 256,386.6 C336.63,386.6 402,321.23 402,256 C402,175.37 336.63,110 256,110 Z" 
+        fill="none" 
+        stroke="#FFFFFF" 
+        stroke-width="3" 
+        opacity="0.25"/>
+
+  <!-- API Symbol Bracket Left < -->
+  <path d="M195 190 L135 250 L195 310" 
+        fill="none" 
+        stroke="#FFFFFF" 
+        stroke-width="26" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#softGlow)"/>
+
+  <!-- API Symbol Slash / -->
+  <path d="M275 170 L235 330" 
+        fill="none" 
+        stroke="url(#apiGrad)" 
+        stroke-width="24" 
+        stroke-linecap="round"
+        filter="url(#softGlow)"/>
+
+  <!-- API Symbol Bracket Right > -->
+  <path d="M315 190 L375 250 L315 310" 
+        fill="none" 
+        stroke="#FFFFFF" 
+        stroke-width="26" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#softGlow)"/>
+
+  <!-- API Network Pulse Nodes -->
+  <circle cx="135" cy="250" r="10" fill="#38BDF8"/>
+  <circle cx="375" cy="250" r="10" fill="#38BDF8"/>
+  <circle cx="255" cy="250" r="8" fill="#FFFFFF"/>
+</svg>

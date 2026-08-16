@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mk WhatsApp API | Plataforma de Mensajería & Gateway REST</title>
+  <meta name="description" content="Mk WhatsApp API: Gateway REST potente y seguro para WhatsApp. Conecta sesiones mediante código QR y envía mensajes y multimedia al instante.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #0B0F19;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1F2937;
+      --bg-glass: rgba(17, 24, 39, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(37, 211, 102, 0.3);
+      
+      --brand-wa: #25D366;
+      --brand-wa-dark: #128C7E;
+      --brand-wa-gradient: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      --accent-cyan: #38BDF8;
+      --accent-indigo: #818CF8;
+      --accent-purple: #A855F7;
+      
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      
+      --shadow-glow: 0 0 40px -10px rgba(37, 211, 102, 0.25);
+      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(37, 211, 102, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(129, 140, 248, 0.04) 0%, transparent 60%);
+    }
+
+    h1, h2, h3, h4, .brand-font {
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header / Navbar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: var(--bg-glass);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 76px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .brand-logo img {
+      width: 42px;
+      height: 42px;
+      filter: drop-shadow(0 0 10px rgba(37, 211, 102, 0.4));
+    }
+
+    .brand-tag {
+      background: rgba(37, 211, 102, 0.15);
+      color: var(--brand-wa);
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      border: 1px solid rgba(37, 211, 102, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+    }
+
+    .nav-links a:hover {
+      color: var(--brand-wa);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 22px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--brand-wa-gradient);
+      color: #042013;
+      box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(37, 211, 102, 0.45);
+      background: linear-gradient(135deg, #2fe673 0%, #16a595 100%);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--brand-wa);
+      color: var(--brand-wa);
+    }
+
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 90px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(37, 211, 102, 0.08);
+      border: 1px solid rgba(37, 211, 102, 0.25);
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--brand-wa);
+      margin-bottom: 24px;
+      box-shadow: 0 0 20px rgba(37, 211, 102, 0.15);
+    }
+
+    .hero-badge .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--brand-wa);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--brand-wa);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(37, 211, 102, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      line-height: 1.15;
+      font-weight: 800;
+      max-width: 900px;
+      margin: 0 auto 20px;
+      background: linear-gradient(180deg, #FFFFFF 30%, #CBD5E1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #25D366 0%, #38BDF8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 680px;
+      margin: 0 auto 36px;
+    }
+
+    .hero-cta {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    /* Terminal / Code Window */
+    .terminal-container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #0D1117;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .terminal-header {
+      background: #161B22;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #FF5F56; }
+    .dot-yellow { background: #FFBD2E; }
+    .dot-green { background: #27C93F; }
+
+    .terminal-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: var(--transition-smooth);
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--brand-wa);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text-secondary);
+    }
+
+    .terminal-body {
+      padding: 20px 24px;
+      position: relative;
+    }
+
+    .code-content {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.88rem;
+      color: #E2E8F0;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .code-content .keyword { color: #F43F5E; }
+    .code-content .string { color: #38BDF8; }
+    .code-content .header-key { color: #34D399; }
+    .code-content .comment { color: #64748B; font-style: italic; }
+
+    .copy-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .copy-btn:hover {
+      background: rgba(37, 211, 102, 0.2);
+      color: var(--brand-wa);
+      border-color: var(--brand-wa);
+    }
+
+    /* Features Grid */
+    .section-padding {
+      padding: 90px 0;
+    }
+
+    .section-title-wrap {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-badge {
+      color: var(--accent-cyan);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 2.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    .section-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(37, 211, 102, 0.3);
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      background: rgba(37, 211, 102, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--brand-wa);
+      border: 1px solid rgba(37, 211, 102, 0.2);
+    }
+
+    .feature-icon svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* Pricing Section */
+    .pricing-toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+
+    .pricing-toggle-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .pricing-toggle-label.active {
+      color: var(--text-primary);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      transition: .3s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--brand-wa);
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: rgba(37, 211, 102, 0.2);
+      border-color: var(--brand-wa);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .discount-badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .pricing-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 36px 30px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+
+    .pricing-card.featured {
+      background: linear-gradient(180deg, rgba(37, 211, 102, 0.07) 0%, rgba(17, 24, 39, 0.95) 100%);
+      border: 2px solid var(--brand-wa);
+      box-shadow: 0 0 35px rgba(37, 211, 102, 0.2);
+      transform: scale(1.03);
+    }
+
+    .popular-pill {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--brand-wa-gradient);
+      color: #042013;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 14px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+    }
+
+    .pricing-header {
+      margin-bottom: 24px;
+    }
+
+    .plan-name {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .plan-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .plan-price-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 20px 0 10px;
+    }
+
+    .currency {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .price-value {
+      font-size: 3rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-primary);
+    }
+
+    .price-period {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin: 24px 0 32px;
+      flex-grow: 1;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .pricing-features li svg {
+      width: 18px;
+      height: 18px;
+      color: var(--brand-wa);
+      flex-shrink: 0;
+    }
+
+    .pricing-features li.disabled {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .pricing-features li.disabled svg {
+      color: var(--text-muted);
+    }
+
+    /* ROI / Calculator Section */
+    .calculator-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin-top: 50px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .calc-slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .range-input {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg-surface-elevated);
+      outline: none;
+      accent-color: var(--brand-wa);
+      cursor: pointer;
+    }
+
+    .calc-display-box {
+      background: #080D1A;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .savings-number {
+      font-size: 2.8rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      color: var(--accent-cyan);
+      margin: 6px 0;
+    }
+
+    /* Endpoints Section */
+    .endpoint-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition-smooth);
+    }
+
+    .endpoint-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: var(--bg-surface-elevated);
+    }
+
+    .endpoint-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .method-badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .method-get { background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .method-post { background: rgba(37, 211, 102, 0.15); color: var(--brand-wa); border: 1px solid rgba(37, 211, 102, 0.3); }
+
+    .endpoint-path {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .endpoint-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Sticky Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      background: #1E293B;
+      color: var(--text-primary);
+      border-left: 4px solid var(--brand-wa);
+      border-top: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      transform: translateX(120%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast-icon {
+      color: var(--brand-wa);
+      font-size: 1.2rem;
+    }
+
+    .toast-content {
+      flex-grow: 1;
+    }
+
+    .toast-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .toast-msg {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* Modal System */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: var(--shadow-card);
+      transform: scale(0.95);
+      transition: transform 0.25s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-icon-alert {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.15);
+      color: #EF4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      background: #080C14;
+      padding: 50px 0 30px;
+      margin-top: 60px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 360px;
+      margin-top: 12px;
+    }
+
+    .footer-col h4 {
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col ul li a {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      transition: var(--transition-smooth);
+    }
+
+    .footer-col ul li a:hover {
+      color: var(--brand-wa);
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 24px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero-title { font-size: 2.5rem; }
+      .calculator-box { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .pricing-card.featured { transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Navigation -->
+  <header>
+    <div class="container nav-wrapper">
+      <a href="/" class="brand-logo">
+        <img src="/logo.svg" alt="Mk WhatsApp API Logo">
+        <span><span style="color: var(--brand-wa);">Mk</span> WhatsApp API</span>
+        <span class="brand-tag">v1.0 REST</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features">Características</a></li>
+        <li><a href="#pricing">Planes & Precios</a></li>
+        <li><a href="#calculator">Calculadora ROI</a></li>
+        <li><a href="#endpoints">Endpoints</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="#quickstart" class="btn btn-outline btn-sm" id="btn-quickstart-nav">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          Guía Rápida
+        </a>
+        <a href="#pricing" class="btn btn-primary btn-sm">Ver Tarifas</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>Gateway REST multi-sesión independiente</span>
+      </div>
+
+      <h1 class="hero-title">
+        La API de WhatsApp más ágil para tus <span>sistemas y aplicaciones</span>
+      </h1>
+
+      <p class="hero-desc">
+        Conecta tus números mediante código QR en segundos, envía mensajes de texto, imágenes, audios y documentos sin pagar tarifas exorbitantes por conversación.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#quickstart" class="btn btn-primary" id="hero-btn-quickstart">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Probar Ejemplos de Código
+        </a>
+        <a href="#pricing" class="btn btn-secondary" id="hero-btn-pricing">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          Ver Planes y Precios
+        </a>
+      </div>
+
+      <!-- Interactive Code Terminal -->
+      <div class="terminal-container" id="quickstart">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="terminal-dot dot-red"></span>
+            <span class="terminal-dot dot-yellow"></span>
+            <span class="terminal-dot dot-green"></span>
+          </div>
+
+          <div class="terminal-tabs">
+            <button class="tab-btn active" onclick="switchTab('curl')">cURL</button>
+            <button class="tab-btn" onclick="switchTab('nodejs')">Node.js</button>
+            <button class="tab-btn" onclick="switchTab('python')">Python</button>
+            <button class="tab-btn" onclick="switchTab('php')">PHP</button>
+          </div>
+        </div>
+
+        <div class="terminal-body">
+          <button class="copy-btn" onclick="copyCodeSnippet()" id="btn-copy-code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copiar
+          </button>
+          
+          <div id="code-curl" class="code-content">
+<span class="comment"># Ejemplo de envío a través del Gateway seguro</span>
+curl -X POST "https://gateway.midominio.com/v1/messages/dispatch" \
+  -H "<span class="header-key">Content-Type: application/json</span>" \
+  -H "<span class="header-key">x-api-key: TU_MASTER_API_KEY</span>" \
+  -d '{
+    "<span class="keyword">X-API-KEY</span>": "<span class="string">instancia_empresa_01</span>",
+    "<span class="keyword">to</span>": "<span class="string">50212345678</span>",
+    "<span class="keyword">message</span>": "<span class="string">¡Hola! Tu notificación ha sido procesada exitosamente 🚀</span>"
+  }'</div>
+
+          <div id="code-nodejs" class="code-content" style="display: none;">
+<span class="comment">// Ejemplo de integración con Node.js</span>
+<span class="keyword">const</span> res = <span class="keyword">await</span> fetch(<span class="string">'https://gateway.midominio.com/v1/messages/dispatch'</span>, {
+  method: <span class="string">'POST'</span>,
+  headers: {
+    <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>,
+    <span class="string">'x-api-key'</span>: <span class="string">'TU_MASTER_API_KEY'</span>
+  },
+  body: JSON.stringify({
+    X-API-KEY: <span class="string">'instancia_empresa_01'</span>,
+    to: <span class="string">'50212345678'</span>,
+    message: <span class="string">'¡Hola! Tu notificación ha sido procesada exitosamente 🚀'</span>
+  })
+});
+<span class="keyword">const</span> data = <span class="keyword">await</span> res.json();
+console.log(data);</div>
+
+          <div id="code-python" class="code-content" style="display: none;">
+<span class="comment"># Ejemplo de integración con Python</span>
+<span class="keyword">import</span> requests
+
+url = <span class="string">"https://gateway.midominio.com/v1/messages/dispatch"</span>
+headers = {
+    <span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>,
+    <span class="string">"x-api-key"</span>: <span class="string">"TU_MASTER_API_KEY"</span>
+}
+payload = {
+    <span class="string">"X-API-KEY"</span>: <span class="string">"instancia_empresa_01"</span>,
+    <span class="string">"to"</span>: <span class="string">"50212345678"</span>,
+    <span class="string">"message"</span>: <span class="string">"¡Hola! Tu notificación ha sido procesada exitosamente 🚀"</span>
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())</div>
+
+          <div id="code-php" class="code-content" style="display: none;">
+<span class="comment">&lt;?php</span>
+<span class="comment">// Ejemplo de integración con PHP</span>
+$ch = curl_init(<span class="string">"https://gateway.midominio.com/v1/messages/dispatch"</span>);
+$payload = json_encode([
+    <span class="string">"X-API-KEY"</span> =&gt; <span class="string">"instancia_empresa_01"</span>,
+    <span class="string">"to"</span> =&gt; <span class="string">"50212345678"</span>,
+    <span class="string">"message"</span> =&gt; <span class="string">"¡Hola! Tu notificación ha sido procesada exitosamente 🚀"</span>
+]);
+
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    <span class="string">"Content-Type: application/json"</span>,
+    <span class="string">"x-api-key: TU_MASTER_API_KEY"</span>
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, <span class="keyword">true</span>);
+$res = curl_exec($ch);
+curl_close($ch);
+echo $res;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="section-padding" id="features">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-badge">Capacidades Principales</span>
+        <h2 class="section-title">Diseñada para desarrolladores y empresas</h2>
+        <p class="section-subtitle">Toda la potencia de WhatsApp Web empaquetada en un servidor API modular, seguro y fácil de escalar.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7.5" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          </div>
+          <h3>Multi-Instancia & Sesiones</h3>
+          <p>Maneja múltiples números de WhatsApp en el mismo servidor simplemente enviando un identificador de sesión único en el header <code>X-API-KEY</code>.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          </div>
+          <h3>Archivos & Multimedia</h3>
+          <p>Envía documentos PDF, imágenes, videos y notas de voz mediante carga directa (Multipart), enlaces públicos (URL) o cadenas codificadas en Base64.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </div>
+          <h3>Conexión QR Dinámica</h3>
+          <p>Genera y visualiza códigos QR directamente como imagen PNG en el navegador o como string ASCII para integrarlo en tu propio panel de administración.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <h3>Seguridad Master Key</h3>
+          <p>Protege todas las rutas críticas del gateway con autenticación centralizada por llave maestra, evitando accesos no autorizados a la API.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          </div>
+          <h3>Limpieza Automática</h3>
+          <p>Mantenimiento programable para purgar archivos temporales y sesiones inactivas huérfanas, optimizando el consumo de disco y memoria RAM.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <h3>Arquitectura RESTful</h3>
+          <p>Estructura JSON limpia, códigos de estado HTTP estándar y respuestas predecibles para integrar con cualquier lenguaje o software existente.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Suggestions Section -->
+  <section class="section-padding" id="pricing" style="background: rgba(17, 24, 39, 0.4); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-badge">Tarifas & Uso Responsable</span>
+        <h2 class="section-title">Planes diseñados para sistemas de gestión</h2>
+        <p class="section-subtitle">Tarifas accesibles para el envío moderado de respuestas, notificaciones y confirmaciones automáticas.</p>
+      </div>
+
+      <!-- Warning / Anti-Spam Banner -->
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 36px; display: flex; gap: 16px; align-items: flex-start; max-width: 900px; margin-left: auto; margin-right: auto;">
+        <div style="font-size: 1.8rem; line-height: 1; flex-shrink: 0;">⚠️</div>
+        <div>
+          <h4 style="color: #FBBF24; font-size: 1.05rem; font-weight: 700; margin-bottom: 6px;">Uso Transaccional & Protección de tu Número</h4>
+          <p style="color: #CBD5E1; font-size: 0.9rem; line-height: 1.55;">
+            Esta API está construida exclusivamente para <strong>interactuar con aplicaciones de gestión (ERP, CRM, e-commerce, agendas)</strong> enviando confirmaciones de pedidos, citas y respuestas de uso moderado. <strong>No está permitida para spam ni publicidad masiva</strong>. Utilizarla para envíos masivos indiscriminados conlleva un alto riesgo de que <strong>WhatsApp suspenda o bloquee definitivamente el número telefónico utilizado</strong>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Toggle Billing Cycle -->
+      <div class="pricing-toggle-wrap">
+        <span class="pricing-toggle-label active" id="label-monthly">Facturación Mensual</span>
+        <label class="switch">
+          <input type="checkbox" id="pricing-toggle" onchange="togglePricing()">
+          <span class="slider"></span>
+        </label>
+        <span class="pricing-toggle-label" id="label-annual">Facturación Anual</span>
+        <span class="discount-badge">Ahorra 20%</span>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Plan Starter -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="plan-name">Plan Básico</h3>
+            <p class="plan-desc">Para microempresas que requieren notificaciones automáticas y alertas puntuales.</p>
+            <div class="plan-price-wrap">
+              <span class="currency">$</span>
+              <span class="price-value" id="price-starter">9</span>
+              <span class="price-period" id="period-starter">/mes</span>
+            </div>
+          </div>
+
+          <ul class="pricing-features">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <strong>1 Sesión</strong> WhatsApp Activa
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Hasta <strong>600 mensajes</strong> / mes
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Confirmaciones de pedidos y citas
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Conexión QR por interfaz web
+            </li>
+            <li class="disabled">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              Envío de PDFs y multimedia pesada
+            </li>
+            <li class="disabled">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              Múltiples sesiones simultáneas
+            </li>
+          </ul>
+
+          <button class="btn btn-outline" onclick="selectPlan('Básico', 9)">Seleccionar Plan Básico</button>
+        </div>
+
+        <!-- Plan Pro (Featured) -->
+        <div class="pricing-card featured">
+          <span class="popular-pill">Más Recomendado</span>
+          <div class="pricing-header">
+            <h3 class="plan-name">Plan Gestión Pro</h3>
+            <p class="plan-desc">Ideal para ERPs, CRMs, clínicas, restaurantes y comercios con flujo transaccional diario.</p>
+            <div class="plan-price-wrap">
+              <span class="currency" style="color: var(--brand-wa);">$</span>
+              <span class="price-value" style="color: var(--brand-wa);" id="price-pro">19</span>
+              <span class="price-period" id="period-pro">/mes</span>
+            </div>
+          </div>
+
+          <ul class="pricing-features">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <strong>Hasta 2 Sesiones</strong> simultáneas
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Hasta <strong>2,500 mensajes</strong> / mes
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Facturas en PDF, Comprobantes e Imágenes
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Respuestas automatizadas moderadas
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Auto-reconexión y persistencia de sesión
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Soporte técnico transaccional
+            </li>
+          </ul>
+
+          <button class="btn btn-primary" onclick="selectPlan('Gestión Pro', 19)">Contratar Plan Pro</button>
+        </div>
+
+        <!-- Plan Enterprise -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="plan-name">Plan Multi-Sucursal</h3>
+            <p class="plan-desc">Para empresas con varias sucursales o líneas de atención que requieren uso controlado.</p>
+            <div class="plan-price-wrap">
+              <span class="currency">$</span>
+              <span class="price-value" id="price-enterprise">39</span>
+              <span class="price-period" id="period-enterprise">/mes</span>
+            </div>
+          </div>
+
+          <ul class="pricing-features">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <strong>Hasta 4 Sesiones</strong> (Multi-número)
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Hasta <strong>6,000 mensajes</strong> / mes (Límite seguro)
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Protección anti-saturación de línea
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Archivos pesados (PDFs, Audio, Docs)
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              SLA 99.9% de disponibilidad del gateway
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Asesoría de buenas prácticas de envío
+            </li>
+          </ul>
+
+          <button class="btn btn-outline" onclick="selectPlan('Multi-Sucursal', 39)">Seleccionar Plan</button>
+        </div>
+      </div>
+
+      <!-- ROI / Savings Calculator -->
+      <div class="calculator-box" id="calculator">
+        <div class="calc-slider-wrap">
+          <span class="section-badge">Calculadora de Ahorro Transaccional</span>
+          <h3 style="font-size: 1.5rem;">¿Cuánto ahorras frente a Meta Cloud API?</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Meta cobra aproximadamente <strong>$0.035 a $0.050 USD</strong> por cada conversación iniciada. Con Mk WhatsApp API mantienes una tarifa plana accesible.
+          </p>
+
+          <label style="font-weight: 600; font-size: 0.95rem; margin-top: 10px;">
+            Mensajes transaccionales al mes: <span id="calc-volume-text" style="color: var(--brand-wa); font-weight: 700;">2,000</span> msgs
+          </label>
+          <input type="range" min="200" max="6000" step="100" value="2000" class="range-input" id="calc-slider" oninput="updateCalculator()">
+        </div>
+
+        <div class="calc-display-box">
+          <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Ahorro Mensual Estimado</span>
+          <div class="savings-number" id="calc-savings">$51 USD</div>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;" id="calc-details">
+            Costo Meta: ~$70/mes vs Costo Mk API: ~$19/mes (<strong>Ahorro del 73%</strong>)
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Endpoints Overview Section (Abstracted for Security) -->
+  <section class="section-padding" id="endpoints">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-badge">Módulos de Integración</span>
+        <h2 class="section-title">Servicios y Capacidades Disponibles</h2>
+        <p class="section-subtitle">Conectividad de alto rendimiento protegida por autenticación y llave de acceso.</p>
+      </div>
+
+      <div style="max-width: 850px; margin: 0 auto;">
+        <div class="endpoint-card">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">AUTH / QR</span>
+            <div>
+              <div class="endpoint-path">Vinculación de Dispositivo & Generador QR</div>
+              <div class="endpoint-desc">Establece la conexión en tiempo real generando un código QR dinámico listo para escanear.</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showStickyToast('Módulo Activo', 'El servicio de generación de QR dinámico se encuentra 100% operativo.', 'success')">Ver Estado</button>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">MESSAGING / TEXT</span>
+            <div>
+              <div class="endpoint-path">Despacho de Mensajería & Notificaciones</div>
+              <div class="endpoint-desc">Envío automatizado de mensajes de texto, alertas y confirmaciones con soporte para emojis.</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showStickyToast('Módulo Activo', 'El servicio de despacho de mensajes soporta alta concurrencia.', 'success')">Ver Estado</button>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">MEDIA / UPLOAD</span>
+            <div>
+              <div class="endpoint-path">Transmisión Multimedia & Documentos</div>
+              <div class="endpoint-desc">Envío de facturas en PDF, comprobantes en imagen, notas de audio y videos de hasta 50MB.</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showStickyToast('Módulo Activo', 'El servicio multimedia admite URLs públicas, Base64 y Multipart.', 'success')">Ver Estado</button>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">MONITOR / SESSIONS</span>
+            <div>
+              <div class="endpoint-path">Monitor de Conectividad & Instancias Activas</div>
+              <div class="endpoint-desc">Consulta métricas de disponibilidad, salud del gateway y número de sesiones conectadas.</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showStickyToast('Módulo Activo', 'El monitor de sesiones reporta estado en tiempo real.', 'success')">Ver Estado</button>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">SECURITY / LOGOUT</span>
+            <div>
+              <div class="endpoint-path">Desconexión Segura & Cierre de Instancias</div>
+              <div class="endpoint-desc">Invalida y purga credenciales de sesión bajo demanda garantizando privacidad.</div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" style="color: #F87171; border-color: rgba(239, 68, 68, 0.3);" onclick="showDeleteConfirmModal('instancia_empresa_01')">Simular Cierre</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sticky Toast Notification System -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-icon-alert">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div>
+          <h3 class="modal-title">¿Confirmar cierre de sesión?</h3>
+        </div>
+      </div>
+      <div class="modal-body" id="modal-body-text">
+        ¿Estás seguro de que deseas desconectar y eliminar la sesión <strong id="modal-session-id">instancia_empresa_01</strong>? Esta acción invalidará las credenciales y requerirá escanear el código QR nuevamente.
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary btn-sm" onclick="closeConfirmModal()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" style="background: #DC2626; color: #FFFFFF;" onclick="executeDeleteSession()">Sí, Cerrar Sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="brand-logo" style="margin-bottom: 12px;">
+            <img src="/logo.svg" alt="Mk WhatsApp API Logo" style="width: 36px; height: 36px;">
+            <span><span style="color: var(--brand-wa);">Mk</span> WhatsApp API</span>
+          </div>
+          <p class="footer-desc">
+            Solución ligera, escalable y sin comisiones por mensaje para integrar WhatsApp con ERPs, CRMs, e-commerces y sistemas a medida.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Secciones</h4>
+          <ul>
+            <li><a href="#quickstart">Guía de Inicio</a></li>
+            <li><a href="#features">Características</a></li>
+            <li><a href="#pricing">Planes y Precios</a></li>
+            <li><a href="#endpoints">Servicios y Módulos</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Servicios</h4>
+          <ul>
+            <li><a href="#endpoints">Despacho de Mensajería</a></li>
+            <li><a href="#endpoints">Transmisión Multimedia</a></li>
+            <li><a href="#endpoints">Generación de QR Dinámico</a></li>
+            <li><a href="#endpoints">Monitor de Instancias</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Mk WhatsApp API. Todos los derechos reservados.</div>
+        <div style="display: flex; gap: 16px; align-items: center;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--brand-wa);">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--brand-wa); display: inline-block;"></span>
+            Servidor Activo
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching for code samples
+    function switchTab(lang) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.code-content').forEach(c => c.style.display = 'none');
+      
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.innerText.toLowerCase().includes(lang));
+      if (targetBtn) targetBtn.classList.add('active');
+      
+      const targetCode = document.getElementById('code-' + lang);
+      if (targetCode) targetCode.style.display = 'block';
+    }
+
+    // Copy code snippet to clipboard with sticky toast notification
+    function copyCodeSnippet() {
+      const activeCode = document.querySelector('.code-content[style*="display: block"]') || document.getElementById('code-curl');
+      if (activeCode) {
+        navigator.clipboard.writeText(activeCode.innerText).then(() => {
+          showStickyToast('¡Código Copiado!', 'El fragmento de código ha sido copiado al portapapeles con éxito.', 'success');
+        }).catch(() => {
+          showStickyToast('Error', 'No se pudo copiar el código automáticamente.', 'error');
+        });
+      }
+    }
+
+    // Sticky Toast System
+    function showStickyToast(title, message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      
+      const icon = type === 'success' 
+        ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+        : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+
+      toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-msg">${message}</div>
+        </div>
+      `;
+
+      container.appendChild(toast);
+
+      // Trigger animation
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 50);
+
+      // Auto dismiss after 4.5s
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 4500);
+    }
+
+    // Pricing Billing Toggle
+    let isAnnual = false;
+    function togglePricing() {
+      const toggle = document.getElementById('pricing-toggle');
+      isAnnual = toggle.checked;
+      
+      document.getElementById('label-monthly').classList.toggle('active', !isAnnual);
+      document.getElementById('label-annual').classList.toggle('active', isAnnual);
+
+      const starter = isAnnual ? 7 : 9;
+      const pro = isAnnual ? 15 : 19;
+      const enterprise = isAnnual ? 32 : 39;
+      const period = isAnnual ? '/mes (anual)' : '/mes';
+
+      document.getElementById('price-starter').innerText = starter;
+      document.getElementById('period-starter').innerText = period;
+
+      document.getElementById('price-pro').innerText = pro;
+      document.getElementById('period-pro').innerText = period;
+
+      document.getElementById('price-enterprise').innerText = enterprise;
+      document.getElementById('period-enterprise').innerText = period;
+
+      showStickyToast(
+        isAnnual ? 'Facturación Anual Activada' : 'Facturación Mensual Activada',
+        isAnnual ? 'Se ha aplicado el 20% de descuento en todos los planes sugeridos.' : 'Mostrando precios regulares mes a mes.',
+        'success'
+      );
+    }
+
+    function selectPlan(planName, price) {
+      const finalPrice = isAnnual ? Math.round(price * 0.8) : price;
+      showStickyToast(
+        `Plan ${planName} Seleccionado`,
+        `Has seleccionado el Plan ${planName} por $${finalPrice} USD/mes. ¡Configuración lista!`,
+        'success'
+      );
+    }
+
+    // ROI / Savings Calculator
+    function updateCalculator() {
+      const volume = parseInt(document.getElementById('calc-slider').value);
+      document.getElementById('calc-volume-text').innerText = volume.toLocaleString();
+
+      // Meta charges roughly $0.035 avg per conversation window
+      const metaCost = Math.max(10, Math.round(volume * 0.035));
+      const apiCost = volume > 2500 ? 39 : (volume > 600 ? 19 : 9);
+      const savings = Math.max(0, metaCost - apiCost);
+      const percent = Math.round((savings / metaCost) * 100);
+
+      document.getElementById('calc-savings').innerText = `$${savings.toLocaleString()} USD`;
+      document.getElementById('calc-details').innerHTML = `
+        Costo Meta Cloud: ~$${metaCost.toLocaleString()}/mes vs Costo Mk API: ~$${apiCost}/mes (<strong>Ahorro del ${percent}%</strong>)
+      `;
+    }
+
+    // Modal Confirmation for Session Delete / Logout
+    let pendingSessionToDelete = null;
+    function showDeleteConfirmModal(sessionId) {
+      pendingSessionToDelete = sessionId;
+      document.getElementById('modal-session-id').innerText = sessionId;
+      document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.remove('active');
+      pendingSessionToDelete = null;
+    }
+
+    function executeDeleteSession() {
+      const sid = pendingSessionToDelete || 'mi_sesion_01';
+      closeConfirmModal();
+      showStickyToast(
+        'Sesión Desconectada',
+        `La sesión ${sid} ha sido cerrada y removida del servidor de forma segura.`,
+        'success'
+      );
+    }
+
+    function copyTextToClipboard(text, title = 'Copiado') {
+      navigator.clipboard.writeText(text).then(() => {
+        showStickyToast(title, `El texto "${text}" ha sido copiado al portapapeles.`, 'success');
+      }).catch(() => {
+        showStickyToast('Error', 'No se pudo copiar el texto.', 'error');
+      });
+    }
+  </script>
+</body>
+</html>

@@ -15,3 +15,7 @@
 
 # Deploy
 deploy.sh
+
+# IA Context
+/.agents
+/.clinerules

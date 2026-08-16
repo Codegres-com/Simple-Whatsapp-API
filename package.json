@@ -1,7 +1,7 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "description": "Simple Whatsapp API - Just connect with QR and start sending messages instantly.",
+  "description": "Mk WhatsApp API - Gateway REST para mensajería y automatización con conexión QR.",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",

@@ -1,9 +1,9 @@
 require('dotenv').config();
 const swaggerJSDoc = require('swagger-jsdoc');
 
-const title = process.env.SWAGGER_TITLE || process.env.APP_TITLE || 'Simple WhatsApp API';
-const baseDescription = process.env.SWAGGER_DESCRIPTION || process.env.APP_DESCRIPTION || 'A simple API to send WhatsApp messages, built with Node.js and whatsapp-web.js.';
-const description = `${baseDescription}\n\n*Basado en: Simple WhatsApp API*`;
+const title = process.env.SWAGGER_TITLE || process.env.APP_TITLE || 'Mk WhatsApp API';
+const baseDescription = process.env.SWAGGER_DESCRIPTION || process.env.APP_DESCRIPTION || 'Gateway REST para mensajería y automatización de WhatsApp.';
+const description = `${baseDescription}`;
 
 const serverUrl = process.env.SERVER_URL || process.env.API_URL || `http://localhost:${process.env.PORT || 3000}`;
 const serverDescription = process.env.SERVER_DESCRIPTION || 'API Server';
